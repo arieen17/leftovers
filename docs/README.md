@@ -9,7 +9,8 @@
 - `meeting-notes/` - Team meeting notes and decisions
 
 ## Team LeftOvers
+
 - Arielle Haryanto
 - Jonathan Backues
-- Devin Alexandre  
+- Devin Alexandre
 - Anderson Wang
