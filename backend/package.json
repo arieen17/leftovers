@@ -1,0 +1,15 @@
+{
+  "name": "rate-backend",
+  "version": "1.0.0",
+  "description": "Backend for R'ATE food rating app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "aws-sdk": "^2.0.0"
+  }
+}
