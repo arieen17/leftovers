@@ -1,13 +1,5 @@
-import { View } from "react-native";
-import { AppText } from "@/components/AppText";
+import { Redirect } from "expo-router";
 
-export default function IndexScreen() {
-  return (
-    <View className="justify-center flex-1 p-4">
-      <AppText center>
-        Open up <AppText bold>app/index.tsx</AppText> to start working on your
-        app!
-      </AppText>
-    </View>
-  );
+export default function Index() {
+  return <Redirect href="/(tabs)" />;
 }
