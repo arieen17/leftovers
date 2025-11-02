@@ -17,7 +17,6 @@ class Restaurant {
   }
 
   static async findByLocation(latitude, longitude, radius = 1) {
-    // Simple distance calculation (will enhance later with PostGIS)
     const result = await pool.query(`
       SELECT * FROM restaurants 
       WHERE latitude BETWEEN $1 - $3 AND $1 + $3
@@ -34,6 +33,43 @@ class Restaurant {
       [restaurantData.name, restaurantData.address, restaurantData.latitude, 
        restaurantData.longitude, restaurantData.cuisine_type, restaurantData.hours, 
        restaurantData.image_url]
+    );
+    return result.rows[0];
+  }
+
+  static async update(id, updateData) {
+    const fields = [];
+    const values = [];
+    let paramCount = 1;
+
+    for (const [key, value] of Object.entries(updateData)) {
+      if (value !== undefined) {
+        fields.push(`${key} = $${paramCount}`);
+        values.push(value);
+        paramCount++;
+      }
+    }
+
+    if (fields.length === 0) {
+      throw new Error('No fields to update');
+    }
+
+    values.push(id);
+    const query = `
+      UPDATE restaurants 
+      SET ${fields.join(', ')} 
+      WHERE id = $${paramCount} 
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+
+  static async delete(id) {
+    const result = await pool.query(
+      'DELETE FROM restaurants WHERE id = $1 RETURNING *',
+      [id]
     );
     return result.rows[0];
   }

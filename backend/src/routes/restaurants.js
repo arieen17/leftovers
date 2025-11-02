@@ -2,9 +2,11 @@ const express = require('express');
 const {
   getAllRestaurants,
   getRestaurantById,
-  getRestaurantMenu
+  getRestaurantMenu,
+  createRestaurant,
+  updateRestaurant,
+  deleteRestaurant
 } = require('../controllers/restaurantController');
-const pool = require('../../database/config');
 
 const router = express.Router();
 
@@ -17,13 +19,13 @@ router.get('/:id', getRestaurantById);
 // GET /api/restaurants/:id/menu
 router.get('/:id/menu', getRestaurantMenu);
 
-router.get('/debug/all', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT id, name FROM restaurants ORDER BY id');
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// POST /api/restaurants - Create new restaurant
+router.post('/', createRestaurant);
+
+// PUT /api/restaurants/:id - Update restaurant
+router.put('/:id', updateRestaurant);
+
+// DELETE /api/restaurants/:id - Delete restaurant
+router.delete('/:id', deleteRestaurant);
 
 module.exports = router;
