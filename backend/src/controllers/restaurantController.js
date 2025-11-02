@@ -24,7 +24,8 @@ const getRestaurantById = async (req, res) => {
 
 const getRestaurantMenu = async (req, res) => {
   try {
-    const menuItems = await MenuItem.findByRestaurant(req.params.id);
+    // Use Restaurant.getMenuWithRatings() instead of MenuItem.findByRestaurant()
+    const menuItems = await Restaurant.getMenuWithRatings(req.params.id);
     res.json(menuItems);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch menu' });
