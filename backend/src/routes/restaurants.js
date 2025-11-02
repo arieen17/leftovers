@@ -7,6 +7,7 @@ const {
   updateRestaurant,
   deleteRestaurant
 } = require('../controllers/restaurantController');
+const pool = require('../../database/config'); 
 
 const router = express.Router();
 

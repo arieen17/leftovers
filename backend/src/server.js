@@ -13,7 +13,13 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 // Restaurant routes
 app.use('/api/restaurants', require('./routes/restaurants'));
-// Health check route
+
+// Review routes
+app.use('/api/reviews', require('./routes/reviews'));
+
+// Menu item routes
+app.use('/api/menu-items', require('./routes/menuItems'));
+
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: '✅ Backend is running!', 

@@ -73,6 +73,35 @@ class Restaurant {
     );
     return result.rows[0];
   }
+
+  // GET ALL menu items for a restaurant WITH ratings
+  static async getMenuWithRatings(restaurantId) {
+    const result = await pool.query(
+      `SELECT menu_items.*, 
+              COALESCE(AVG(reviews.rating), 0) as average_rating,
+              COUNT(reviews.id) as review_count
+       FROM menu_items 
+       LEFT JOIN reviews ON menu_items.id = reviews.menu_item_id
+       WHERE restaurant_id = $1 
+       GROUP BY menu_items.id
+       ORDER BY category, name`,
+      [restaurantId]
+    );
+    return result.rows;
+  }
+
+  // Get overall average rating for the entire restaurant
+  static async getAverageRating(restaurantId) {
+    const result = await pool.query(
+      `SELECT AVG(reviews.rating) as average_rating, 
+              COUNT(reviews.id) as review_count
+       FROM reviews 
+       JOIN menu_items ON reviews.menu_item_id = menu_items.id 
+       WHERE menu_items.restaurant_id = $1`,
+      [restaurantId]
+    );
+    return result.rows[0];
+  }
 }
 
 module.exports = Restaurant;
