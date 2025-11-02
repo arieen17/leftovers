@@ -11,7 +11,8 @@ app.use(express.json());
 
 // Auth routes
 app.use('/api/auth', require('./routes/auth'));
-
+// Restaurant routes
+app.use('/api/restaurants', require('./routes/restaurants'));
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ 
