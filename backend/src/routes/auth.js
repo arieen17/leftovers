@@ -15,15 +15,27 @@ router.post('/signup', signup);
 router.post('/login', login);
 
 
-// Add this route for debugging
 router.get('/debug-users', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM users');
-    res.json({ users: result.rows });
+    // Check table structure
+    const structure = await pool.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'users'
+    `);
+    
+    // Check actual data
+    const data = await pool.query('SELECT * FROM users');
+    
+    res.json({ 
+      table_structure: structure.rows,
+      users: data.rows 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 router.post('/verify-ucr-email', (req, res) => {
   res.json({ message: 'UCR email verification - TODO' });
