@@ -1,3 +1,5 @@
+Run npm run dev from backend directory to start server
+
 Backend Endpoints:
 
 Base URL: http://localhost:5000
