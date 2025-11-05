@@ -1,4 +1,4 @@
-const pool = require('../../database/config');
+const pool = require("../../database/config");
 
 class Restaurant {
   static async findAll() {
@@ -9,19 +9,21 @@ class Restaurant {
   }
 
   static async findById(id) {
-    const result = await pool.query(
-      'SELECT * FROM restaurants WHERE id = $1',
-      [id]
-    );
+    const result = await pool.query("SELECT * FROM restaurants WHERE id = $1", [
+      id,
+    ]);
     return result.rows[0];
   }
 
   static async findByLocation(latitude, longitude, radius = 1) {
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT * FROM restaurants 
       WHERE latitude BETWEEN $1 - $3 AND $1 + $3
       AND longitude BETWEEN $2 - $3 AND $2 + $3
-    `, [latitude, longitude, radius]);
+    `,
+      [latitude, longitude, radius],
+    );
     return result.rows;
   }
 
@@ -30,9 +32,15 @@ class Restaurant {
       `INSERT INTO restaurants (name, address, latitude, longitude, cuisine_type, hours, image_url)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [restaurantData.name, restaurantData.address, restaurantData.latitude, 
-       restaurantData.longitude, restaurantData.cuisine_type, restaurantData.hours, 
-       restaurantData.image_url]
+      [
+        restaurantData.name,
+        restaurantData.address,
+        restaurantData.latitude,
+        restaurantData.longitude,
+        restaurantData.cuisine_type,
+        restaurantData.hours,
+        restaurantData.image_url,
+      ],
     );
     return result.rows[0];
   }
@@ -51,13 +59,13 @@ class Restaurant {
     }
 
     if (fields.length === 0) {
-      throw new Error('No fields to update');
+      throw new Error("No fields to update");
     }
 
     values.push(id);
     const query = `
       UPDATE restaurants 
-      SET ${fields.join(', ')} 
+      SET ${fields.join(", ")} 
       WHERE id = $${paramCount} 
       RETURNING *
     `;
@@ -68,8 +76,8 @@ class Restaurant {
 
   static async delete(id) {
     const result = await pool.query(
-      'DELETE FROM restaurants WHERE id = $1 RETURNING *',
-      [id]
+      "DELETE FROM restaurants WHERE id = $1 RETURNING *",
+      [id],
     );
     return result.rows[0];
   }
@@ -85,7 +93,7 @@ class Restaurant {
        WHERE restaurant_id = $1 
        GROUP BY menu_items.id
        ORDER BY category, name`,
-      [restaurantId]
+      [restaurantId],
     );
     return result.rows;
   }
@@ -98,7 +106,7 @@ class Restaurant {
        FROM reviews 
        JOIN menu_items ON reviews.menu_item_id = menu_items.id 
        WHERE menu_items.restaurant_id = $1`,
-      [restaurantId]
+      [restaurantId],
     );
     return result.rows[0];
   }

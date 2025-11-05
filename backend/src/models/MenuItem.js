@@ -1,4 +1,4 @@
-const pool = require('../../database/config');
+const pool = require("../../database/config");
 
 class MenuItem {
   // Get ONE specific menu item with its ratings
@@ -11,7 +11,7 @@ class MenuItem {
        LEFT JOIN reviews ON menu_items.id = reviews.menu_item_id
        WHERE menu_items.id = $1 
        GROUP BY menu_items.id`,
-      [id]
+      [id],
     );
     return result.rows[0];
   }
@@ -22,9 +22,15 @@ class MenuItem {
       `INSERT INTO menu_items (restaurant_id, name, description, price, category, image_url, tags)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [menuItemData.restaurant_id, menuItemData.name, menuItemData.description,
-       menuItemData.price, menuItemData.category, menuItemData.image_url,
-       menuItemData.tags]
+      [
+        menuItemData.restaurant_id,
+        menuItemData.name,
+        menuItemData.description,
+        menuItemData.price,
+        menuItemData.category,
+        menuItemData.image_url,
+        menuItemData.tags,
+      ],
     );
     return result.rows[0];
   }
@@ -44,13 +50,13 @@ class MenuItem {
     }
 
     if (fields.length === 0) {
-      throw new Error('No fields to update');
+      throw new Error("No fields to update");
     }
 
     values.push(id);
     const query = `
       UPDATE menu_items 
-      SET ${fields.join(', ')} 
+      SET ${fields.join(", ")} 
       WHERE id = $${paramCount} 
       RETURNING *
     `;
@@ -62,8 +68,8 @@ class MenuItem {
   // Delete ONE menu item
   static async delete(id) {
     const result = await pool.query(
-      'DELETE FROM menu_items WHERE id = $1 RETURNING *',
-      [id]
+      "DELETE FROM menu_items WHERE id = $1 RETURNING *",
+      [id],
     );
     return result.rows[0];
   }
@@ -71,8 +77,8 @@ class MenuItem {
   // Get rating stats for ONE menu item
   static async getAverageRating(menuItemId) {
     const result = await pool.query(
-      'SELECT AVG(rating) as average_rating, COUNT(*) as review_count FROM reviews WHERE menu_item_id = $1',
-      [menuItemId]
+      "SELECT AVG(rating) as average_rating, COUNT(*) as review_count FROM reviews WHERE menu_item_id = $1",
+      [menuItemId],
     );
     return result.rows[0];
   }

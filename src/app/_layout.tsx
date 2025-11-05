@@ -10,6 +10,7 @@ import {
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
 import { Bayon_400Regular } from "@expo-google-fonts/bayon";
+import { PostsProvider } from "@/context/PostsContext";
 
 export default function RootLayout() {
   useFonts({
@@ -21,12 +22,12 @@ export default function RootLayout() {
   });
 
   return (
-    <React.Fragment>
+    <PostsProvider>
       <StatusBar style="auto" />
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-    </React.Fragment>
+    </PostsProvider>
   );
 }
