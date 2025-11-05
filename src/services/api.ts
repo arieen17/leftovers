@@ -1,8 +1,8 @@
 const getApiBaseUrl = () => {
   // Development mode - using IP address for physical devices
   if (__DEV__) {
-    return "http://192.168.1.74:5000"; // for physical devices: "http://YOUR_IP:5000" (can switch out)
-    // return "http://localhost:5000"; // for simulator (can switch out)
+    // return "http://YOUR_IP:5000"; // for physical devices: "http://YOUR_IP:5000" (can switch out)
+    return "http://localhost:5000"; // for simulator (can switch out)
   }
   return "http://52.15.240.1:5000";
 };
@@ -23,7 +23,7 @@ export const API_CONFIG = {
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
@@ -43,7 +43,7 @@ export async function apiRequest<T>(
       throw new Error(
         errorData.error ||
           errorData.message ||
-          `HTTP error! status: ${response.status}`,
+          `HTTP error! status: ${response.status}`
       );
     }
 
