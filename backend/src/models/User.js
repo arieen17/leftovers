@@ -10,13 +10,20 @@ class User {
     return result.rows[0]; // Return undefined if no user found
   }
 
-  static async create(userData) {
-  // Remove bcrypt.hash from here - controller already hashed it!
+static async create(userData) {
+  // Use userData.password directly (already hashed in controller)
   const result = await pool.query(
-    `INSERT INTO users (email, password, name) 
-     VALUES ($1, $2, $3) 
-     RETURNING id, email, name, tier, created_at, password`,
-    [userData.email, userData.password, userData.name] // Use the already-hashed password
+    `INSERT INTO users (email, password, name, birthday, phone_number, address) 
+     VALUES ($1, $2, $3, $4, $5, $6) 
+     RETURNING id, email, name, tier, birthday, phone_number, address, created_at`,
+    [
+      userData.email, 
+      userData.password,  // ← Use the already-hashed password from controller
+      userData.name, 
+      userData.birthday, 
+      userData.phone_number, 
+      userData.address
+    ]
   );
   
   return result.rows[0];

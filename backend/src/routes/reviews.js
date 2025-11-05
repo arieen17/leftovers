@@ -1,4 +1,5 @@
 const express = require('express');
+const { authenticate } = require('../middleware/auth');
 const {
   createReview,
   getMenuItemReviews,
@@ -7,8 +8,8 @@ const {
 
 const router = express.Router();
 
-// POST /api/reviews - Create new review
-router.post('/', createReview);
+// POST /api/reviews - Create new review (requires auth)
+router.post('/', authenticate, createReview);
 
 // GET /api/reviews/menu-item/:menuItemId - Get reviews for a menu item
 router.get('/menu-item/:menuItemId', getMenuItemReviews);
