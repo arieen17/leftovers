@@ -1,4 +1,4 @@
-const pool = require('../../database/config');
+const pool = require("../../database/config");
 
 class Review {
   static async create(reviewData) {
@@ -6,8 +6,13 @@ class Review {
       `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [reviewData.user_id, reviewData.menu_item_id, reviewData.rating, 
-       reviewData.comment, reviewData.photos]
+      [
+        reviewData.user_id,
+        reviewData.menu_item_id,
+        reviewData.rating,
+        reviewData.comment,
+        reviewData.photos,
+      ],
     );
     return result.rows[0];
   }
@@ -19,7 +24,7 @@ class Review {
        JOIN users ON reviews.user_id = users.id
        WHERE menu_item_id = $1 
        ORDER BY created_at DESC`,
-      [menuItemId]
+      [menuItemId],
     );
     return result.rows;
   }
@@ -32,15 +37,15 @@ class Review {
        JOIN restaurants ON menu_items.restaurant_id = restaurants.id
        WHERE user_id = $1 
        ORDER BY created_at DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
 
   static async getAverageRating(menuItemId) {
     const result = await pool.query(
-      'SELECT AVG(rating) as average_rating, COUNT(*) as review_count FROM reviews WHERE menu_item_id = $1',
-      [menuItemId]
+      "SELECT AVG(rating) as average_rating, COUNT(*) as review_count FROM reviews WHERE menu_item_id = $1",
+      [menuItemId],
     );
     return result.rows[0];
   }

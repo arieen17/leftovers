@@ -1,4 +1,4 @@
-const pool = require('../config');
+const pool = require("../config");
 
 const createReviewsTable = async () => {
   const query = `
@@ -17,9 +17,9 @@ const createReviewsTable = async () => {
 
   try {
     await pool.query(query);
-    console.log('✅ Reviews table created');
+    console.log("✅ Reviews table created");
   } catch (error) {
-    console.error('❌ Error creating reviews table:', error);
+    console.error("❌ Error creating reviews table:", error);
   }
 };
 

@@ -1,11 +1,13 @@
-const pool = require('../config');
+const pool = require("../config");
 
 const seedMenuItems = async () => {
   try {
     // Get the restaurant IDs we just created
-    const restaurantResult = await pool.query('SELECT id FROM restaurants ORDER BY id');
-    const restaurantIds = restaurantResult.rows.map(row => row.id);
-    
+    const restaurantResult = await pool.query(
+      "SELECT id FROM restaurants ORDER BY id",
+    );
+    const restaurantIds = restaurantResult.rows.map((row) => row.id);
+
     // Generic menu items for each restaurant
     const menuItems = [
       // Restaurant 1 - American
@@ -15,23 +17,23 @@ const seedMenuItems = async () => {
         description: "Juicy beef patty with lettuce, tomato, and special sauce",
         price: 12.99,
         category: "Main Course",
-        tags: ["beef", "popular"]
+        tags: ["beef", "popular"],
       },
       {
-        restaurant_id: restaurantIds[0], 
+        restaurant_id: restaurantIds[0],
         name: "Caesar Salad",
         description: "Fresh romaine lettuce with parmesan and croutons",
         price: 8.99,
         category: "Salads",
-        tags: ["vegetarian", "healthy"]
+        tags: ["vegetarian", "healthy"],
       },
       {
         restaurant_id: restaurantIds[0],
-        name: "Chocolate Milkshake", 
+        name: "Chocolate Milkshake",
         description: "Creamy chocolate milkshake with whipped cream",
         price: 5.99,
         category: "Drinks",
-        tags: ["dessert", "sweet"]
+        tags: ["dessert", "sweet"],
       },
 
       // Restaurant 2 - Italian
@@ -41,15 +43,15 @@ const seedMenuItems = async () => {
         description: "Classic pizza with tomato sauce, mozzarella, and basil",
         price: 14.99,
         category: "Pizza",
-        tags: ["vegetarian", "popular"]
+        tags: ["vegetarian", "popular"],
       },
       {
         restaurant_id: restaurantIds[1],
         name: "Spaghetti Carbonara",
         description: "Pasta with creamy sauce, pancetta, and parmesan",
         price: 13.99,
-        category: "Pasta", 
-        tags: ["creamy", "favorite"]
+        category: "Pasta",
+        tags: ["creamy", "favorite"],
       },
       {
         restaurant_id: restaurantIds[1],
@@ -57,7 +59,7 @@ const seedMenuItems = async () => {
         description: "Classic Italian coffee-flavored dessert",
         price: 7.99,
         category: "Desserts",
-        tags: ["coffee", "sweet"]
+        tags: ["coffee", "sweet"],
       },
 
       // Restaurant 3 - Asian
@@ -67,7 +69,7 @@ const seedMenuItems = async () => {
         description: "Grilled chicken with teriyaki sauce and rice",
         price: 11.99,
         category: "Main Course",
-        tags: ["chicken", "popular"]
+        tags: ["chicken", "popular"],
       },
       {
         restaurant_id: restaurantIds[2],
@@ -75,7 +77,7 @@ const seedMenuItems = async () => {
         description: "Crispy spring rolls with assorted vegetables",
         price: 6.99,
         category: "Appetizers",
-        tags: ["vegetarian", "crispy"]
+        tags: ["vegetarian", "crispy"],
       },
       {
         restaurant_id: restaurantIds[2],
@@ -83,20 +85,27 @@ const seedMenuItems = async () => {
         description: "Refreshing green tea flavored ice cream",
         price: 4.99,
         category: "Desserts",
-        tags: ["sweet", "refreshing"]
-      }
+        tags: ["sweet", "refreshing"],
+      },
     ];
 
     for (const item of menuItems) {
       await pool.query(
         `INSERT INTO menu_items (restaurant_id, name, description, price, category, tags)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [item.restaurant_id, item.name, item.description, item.price, item.category, item.tags]
+        [
+          item.restaurant_id,
+          item.name,
+          item.description,
+          item.price,
+          item.category,
+          item.tags,
+        ],
       );
     }
-    console.log('✅ Added sample menu items');
+    console.log("✅ Added sample menu items");
   } catch (error) {
-    console.error('❌ Error seeding menu items:', error);
+    console.error("❌ Error seeding menu items:", error);
   }
 };
 
