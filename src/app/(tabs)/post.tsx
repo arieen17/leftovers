@@ -1,12 +1,12 @@
 import { View } from "react-native";
-import { AppText } from "@/components/AppText";
+import { TopBar } from "@/components/TopBar";
+import { CreateReviewForm } from "@/components/CreateReviewForm";
 
 export default function PostScreen() {
   return (
-    <View className="flex-1 justify-center items-center bg-white">
-      <AppText size="large" bold>
-        Post Screen
-      </AppText>
+    <View className="flex-1 bg-light-blue">
+      <TopBar />
+      <CreateReviewForm />
     </View>
   );
 }

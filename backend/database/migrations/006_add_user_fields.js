@@ -1,4 +1,4 @@
-const pool = require('../config');
+const pool = require("../config");
 
 const addUserFields = async () => {
   const query = `
@@ -10,9 +10,11 @@ const addUserFields = async () => {
 
   try {
     await pool.query(query);
-    console.log('✅ Added birthday, phone_number, and address fields to users table');
+    console.log(
+      "✅ Added birthday, phone_number, and address fields to users table",
+    );
   } catch (error) {
-    console.error('❌ Error adding user fields:', error);
+    console.error("❌ Error adding user fields:", error);
   }
 };
 

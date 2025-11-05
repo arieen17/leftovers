@@ -1,4 +1,4 @@
-const pool = require('./database/config');
+const pool = require("./database/config");
 
 const checkTable = async () => {
   try {
@@ -8,10 +8,10 @@ const checkTable = async () => {
       WHERE table_name = 'restaurants'
       ORDER BY ordinal_position
     `);
-    console.log('📋 Restaurant table columns:');
+    console.log("📋 Restaurant table columns:");
     console.log(result.rows);
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 };
 

@@ -1,80 +1,68 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Image, ScrollView } from "react-native";
-import { AppText } from "@/components/AppText";
-import BearIcon from "../../../public/images/bear.svg";
-import Star from "../../../public/icons/yellowStar.svg"
+import { View, Text, ScrollView } from "react-native";
+import Star from "../../../public/icons/yellowStar.svg";
+import { usePosts } from "@/context/PostsContext";
+import { HorizontalReviewCard } from "@/components/HorizontalReviewCard";
+import { TopBar } from "@/components/TopBar";
+import { SearchBar } from "@/components/SearchBar";
 
 export default function HomeScreen() {
+  const { posts } = usePosts();
+
+  const recentPosts = posts.slice(0, 5);
+
+  const placeholderCount = Math.max(0, 5 - recentPosts.length);
+
   return (
-    <View className="flex-1 justify-center items-center bg-blue">
-        <View style={{flexDirection: 'row', padding: 20}}> 
-          <Star width={20} height={20} style = {{marginHorizontal: 5}}/>
-          <Text style={styles.bigFont}>
-            Top Rated Dishes This Week
-          </Text>
+    <View className="flex-1 bg-blue">
+      <TopBar />
+      <SearchBar />
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-row p-5">
+          <Star width={20} height={20} className="mx-1.5" />
+          <Text className="text-xl text-black">Top Rated Dishes This Week</Text>
         </View>
-        <ScrollView horizontal = {true} style = {{height:200, flexGrow: 0}}>
-          <View style={styles.BlueCenterBox}>
-            <Text style={{alignSelf:"center", alignItems:"center", justifyContent:"center"}}>
+        <ScrollView horizontal={true} className="h-[200] flex-grow-0">
+          <View className="w-[300] h-[360] bg-[#8b8beaff] self-center items-center ml-2.5 rounded-[10px] justify-center">
+            <Text className="self-center items-center justify-center">
               Food Item
             </Text>
           </View>
-          <View style={styles.BlueCenterBox}>
-            <Text style={{alignSelf:"center", alignItems:"center", justifyContent:"center"}}>
+          <View className="w-[300] h-[360] bg-[#8b8beaff] self-center items-center ml-2.5 rounded-[10px] justify-center">
+            <Text className="self-center items-center justify-center">
               Food Item
             </Text>
           </View>
-          <View style={styles.BlueCenterBox}>
-            <Text style={{alignSelf:"center", alignItems:"center", justifyContent:"center"}}>
+          <View className="w-[300] h-[360] bg-[#8b8beaff] self-center items-center ml-2.5 rounded-[10px] justify-center">
+            <Text className="self-center items-center justify-center">
               Food Item
             </Text>
           </View>
         </ScrollView>
-        <View style={{flexDirection: 'row', padding: 20}}> 
-          <Star width={20} height={20} style = {{marginHorizontal: 5}}/>
-          <Text style={styles.bigFont}>
-            Your Reviews
-          </Text>
+        <View className="mt-10 h-px bg-gray-300 mx-5 my-2" />
+        <View className="flex-row p-5">
+          <Star width={20} height={20} className="mx-1.5" />
+          <Text className="text-xl text-black">Your Reviews</Text>
         </View>
-        <ScrollView horizontal = {true} style = {{height:200, flexGrow: 0}}>
-          <View style={styles.BlueCenterBox}>
-            <Text style={{alignSelf:"center", alignItems:"center", justifyContent:"center"}}>
-              Review
-            </Text>
-          </View>
-          <View style={styles.BlueCenterBox}>
-            <Text style={{alignSelf:"center", alignItems:"center", justifyContent:"center"}}>
-              Review
-            </Text>
-          </View>
-          <View style={styles.BlueCenterBox}>
-            <Text style={{alignSelf:"center", alignItems:"center", justifyContent:"center"}}>
-              Review
-            </Text>
-          </View>
+        <ScrollView horizontal={true} className="h-[360] flex-grow-0">
+          {recentPosts.map((post) => (
+            <HorizontalReviewCard key={post.id} post={post} />
+          ))}
+          {Array.from({ length: placeholderCount }, (_, i) => (
+            <View
+              key={`placeholder-${i}`}
+              className="w-[300] h-[360] bg-[#C5DCE9] self-center items-center ml-2.5 rounded-[10px] justify-center"
+            >
+              <Text className="self-center items-center justify-center">
+                Review
+              </Text>
+            </View>
+          ))}
         </ScrollView>
-      </View>
+      </ScrollView>
+    </View>
   );
 }
-
-  
-const styles = StyleSheet.create({
-  bigFont: {
-    fontSize: 20,
-    color:"#000000ff"
-  },
-  background: {
-    flex: 1,
-    backgroundColor: "#120E8F",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  BlueCenterBox: {
-    width: 300,
-    height: 200,
-    backgroundColor: "#8b8beaff",
-    alignSelf: 'center',
-    alignItems: "center",
-    marginLeft: 10,
-    borderRadius: 10,
-  },
-});
