@@ -54,10 +54,7 @@ export function Dropdown({
   return (
     <View className={label ? "mb-6" : ""}>
       {label ? (
-        <Text
-          className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]"
-          style={{ fontFamily: "Bayon_400Regular", letterSpacing: 2 }}
-        >
+        <Text className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]">
           {label}
         </Text>
       ) : null}
@@ -86,22 +83,13 @@ export function Dropdown({
         animationType="slide"
         onRequestClose={handleClose}
       >
-        <View className="flex-1 bg-black/50 justify-end" style={{ flex: 1 }}>
+        <View className="flex-1 bg-black/50 justify-end">
           <TouchableOpacity
             activeOpacity={1}
-            style={{ flex: 1 }}
+            className="flex-1"
             onPress={handleClose}
           />
-          <View
-            className="bg-white rounded-t-3xl"
-            style={{
-              height: "66.67%",
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-            }}
-          >
+          <View className="bg-white rounded-t-3xl h-2/3 absolute bottom-0 left-0 right-0">
             <View className="p-4 border-b border-gray-200">
               <Text className="text-lg font-semibold text-black mb-2">
                 {label}
@@ -125,7 +113,7 @@ export function Dropdown({
                 </View>
               )}
             </View>
-            <View style={{ flex: 1 }}>
+            <View className="flex-1">
               <FlatList
                 data={filteredOptions}
                 keyExtractor={(item) => item}
