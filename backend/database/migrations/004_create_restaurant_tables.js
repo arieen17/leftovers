@@ -1,4 +1,4 @@
-const pool = require('../config');
+const pool = require("../config");
 
 const createRestaurantTables = async () => {
   const queries = [
@@ -23,16 +23,16 @@ const createRestaurantTables = async () => {
       image_url TEXT,
       tags TEXT[],
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`
+    )`,
   ];
 
   try {
     for (const query of queries) {
       await pool.query(query);
     }
-    console.log('✅ Restaurant and menu tables created');
+    console.log("✅ Restaurant and menu tables created");
   } catch (error) {
-    console.error('❌ Error creating restaurant tables:', error);
+    console.error("❌ Error creating restaurant tables:", error);
   }
 };
 

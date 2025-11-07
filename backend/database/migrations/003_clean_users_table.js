@@ -1,4 +1,4 @@
-const pool = require('../config');
+const pool = require("../config");
 
 const createCleanUsersTable = async () => {
   const query = `
@@ -17,9 +17,9 @@ const createCleanUsersTable = async () => {
 
   try {
     await pool.query(query);
-    console.log('✅ Created clean users table with proper schema');
+    console.log("✅ Created clean users table with proper schema");
   } catch (error) {
-    console.error('❌ Error creating clean table:', error);
+    console.error("❌ Error creating clean table:", error);
   }
 };
 
