@@ -109,7 +109,7 @@ export default function ProfileScreen() {
 
         {isReview ? (
             // This View will appear when isVisible is true
-            <ScrollView className="h-full grow-0 w-full">
+            <ScrollView className="h-[190px] grow-0 w-full">
             <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
               <Text className="text-base text-black font-bold">
                 Review
@@ -143,7 +143,7 @@ export default function ProfileScreen() {
 
         {isFavorite ? (
           // This View will appear when isVisible is true
-          <ScrollView className="h-full grow-0 w-full">
+          <ScrollView className="h-[190px] grow-0 w-full">
           <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
             <Star width={20} height={20} className="mx-1.5" />
             <Text className="text-base text-black font-bold">
