@@ -11,6 +11,11 @@ A plain project with the usual suspects set up:
 - ESLint & Prettier
 - TypeScript
 
+# To packages to install
+
+- `npm i`
+- `npm install react-native-maps`
+
 # To Use
 
 - Download the Expo Go App
