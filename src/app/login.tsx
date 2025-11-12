@@ -2,6 +2,7 @@ import { View, TextInput, Text, TouchableOpacity } from "react-native";
 import BearIcon from "../../public/images/bear.svg";
 import { useRouter } from "expo-router";
 
+
 export default function LoginScreen() {
   const router = useRouter();
   const navigate = () => {
