@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import "../../global.css";
-import React from "react";
+import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import {
@@ -20,6 +20,15 @@ export default function RootLayout() {
     Inter_700Bold,
     Bayon_400Regular,
   });
+
+  // Add this useEffect to fix dark mode error
+  useEffect(() => {
+    // This prevents the dark mode configuration error
+    if (typeof window !== 'undefined') {
+      // Set a default color scheme to avoid the media query issue
+      document.documentElement.style.setProperty('color-scheme', 'light');
+    }
+  }, []);
 
   return (
     <PostsProvider>

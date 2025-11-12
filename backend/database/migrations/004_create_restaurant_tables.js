@@ -36,4 +36,4 @@ const createRestaurantTables = async () => {
   }
 };
 
-createRestaurantTables();
+module.exports = { createRestaurantTables };

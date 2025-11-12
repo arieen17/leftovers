@@ -18,10 +18,7 @@ export function FormField({
 }: FormFieldProps) {
   return (
     <View className="mb-6">
-      <Text
-        className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]"
-        style={{ fontFamily: "Bayon_400Regular", letterSpacing: 2 }}
-      >
+      <Text className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]">
         {label}
       </Text>
       <View className="flex-row items-center bg-[#F5F5DC] rounded-lg px-4 py-3 border border-[#E5E5D5]">

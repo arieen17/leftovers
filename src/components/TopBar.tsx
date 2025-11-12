@@ -12,12 +12,10 @@ export function TopBar() {
     >
       <BearIcon width={48} height={48} />
       <Text
-        className="text-white uppercase text-4xl"
+        className="text-white uppercase text-4xl font-bayon tracking-[3]"
         style={{
-          fontFamily: "Bayon_400Regular",
           lineHeight: 60,
           includeFontPadding: false,
-          letterSpacing: 3,
         }}
       >
         R{`'`}ATE
