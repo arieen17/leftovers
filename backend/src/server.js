@@ -4,7 +4,7 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const mapsRoutes = require('./routes/maps');
+const mapsRoutes = require("./routes/maps");
 
 // Middleware
 app.use(cors());
@@ -22,12 +22,12 @@ app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/menu-items", require("./routes/menuItems"));
 
 // Maps routes
-app.use('/api/maps', require('./routes/maps'));
+app.use("/api/maps", require("./routes/maps"));
 
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: '✅ Backend is running!', 
-    timestamp: new Date().toISOString()
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "✅ Backend is running!",
+    timestamp: new Date().toISOString(),
   });
 });
 
