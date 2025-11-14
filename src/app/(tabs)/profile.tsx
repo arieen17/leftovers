@@ -23,6 +23,9 @@ export default function ProfileScreen() {
   const navigate = () => {
     router.replace("login");
   };
+  const navigateToEditProfile = () => {
+    router.push("edit-profile");
+  };
 
   const toggleReview = () => {
     setIsBadge(false);
@@ -68,7 +71,10 @@ export default function ProfileScreen() {
           >
             <Text className="text-base text-white font-bold">Sign Out</Text>
           </TouchableOpacity>
-          <TouchableOpacity className="w-[150px] h-6 bg-[#011A69] rounded-lg justify-center items-center">
+          <TouchableOpacity
+            className="w-[150px] h-6 bg-[#011A69] rounded-lg justify-center items-center"
+            onPress={navigateToEditProfile}
+          >
             <Text className="text-base text-white font-bold">Edit Profile</Text>
           </TouchableOpacity>
         </View>
@@ -131,10 +137,10 @@ export default function ProfileScreen() {
               <Text className="text-base text-black font-bold">Badges</Text>
             </View>
             <View className="">
-              <AwardInvert width={20} height={20} />
-              <AwardInvert width={20} height={20} />
-              <AwardInvert width={20} height={20} />
-              <AwardInvert width={20} height={20} />
+              <Award width={20} height={20} />
+              <Award width={20} height={20} />
+              <Award width={20} height={20} />
+              <Award width={20} height={20} />
             </View>
           </View>
         ) : (
@@ -142,7 +148,6 @@ export default function ProfileScreen() {
         )}
 
         {isFavorite ? (
-          // This View will appear when isVisible is true
           <ScrollView className="h-[190px] grow-0 w-full">
             <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
               <Star width={20} height={20} className="mx-1.5" />
