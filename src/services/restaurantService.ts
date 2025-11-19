@@ -89,6 +89,28 @@ export async function fetchMenuItemById(id: number): Promise<MenuItem> {
 }
 
 /**
+ * Search restaurants and menu items
+ */
+export interface SearchResults {
+  restaurants: Restaurant[];
+  menuItems: MenuItem[];
+}
+
+export async function searchRestaurantsAndItems(
+  query: string,
+): Promise<SearchResults> {
+  try {
+    const results = await apiRequest<SearchResults>(
+      `${API_CONFIG.ENDPOINTS.RESTAURANTS}/search?q=${encodeURIComponent(query)}`,
+    );
+    return results;
+  } catch (error) {
+    console.error("Error searching:", error);
+    throw error;
+  }
+}
+
+/**
  * Check if backend is healthy and connected to database
  */
 export async function checkBackendHealth(): Promise<boolean> {
