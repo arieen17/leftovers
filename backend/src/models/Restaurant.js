@@ -110,6 +110,20 @@ class Restaurant {
     );
     return result.rows[0];
   }
+
+  // Search restaurants by name or cuisine type
+  static async search(query) {
+    const searchTerm = `%${query}%`;
+    const result = await pool.query(
+      `SELECT * FROM restaurants 
+       WHERE LOWER(name) LIKE LOWER($1) 
+       OR LOWER(cuisine_type) LIKE LOWER($1)
+       OR LOWER(address) LIKE LOWER($1)
+       ORDER BY name`,
+      [searchTerm],
+    );
+    return result.rows;
+  }
 }
 
 module.exports = Restaurant;
