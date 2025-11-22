@@ -85,27 +85,51 @@ export function HorizontalReviewCard({ post }: HorizontalReviewCardProps) {
         <View className="px-3">
           <Image
             source={{ uri: post.photo }}
-            className="w-full h-[180] rounded-lg"
+            className="w-full h-[160] rounded-lg"
             resizeMode="cover"
           />
         </View>
       ) : (
         <View className="px-3">
-          <View className="w-full h-[180] bg-[#F5F5DC] rounded-lg justify-center items-center">
+          <View className="w-full h-[160] bg-[#F5F5DC] rounded-lg justify-center items-center">
             <Text className="text-gray-400 text-xs">No Photo</Text>
           </View>
         </View>
       )}
 
-      <View className="p-3 pt-2">
-        <Text className="text-xs text-gray-800 mb-1.5" numberOfLines={1}>
-          {post.review}
-        </Text>
+      <View className="p-3 pt-2 flex-1 justify-between">
+        <View>
+          <Text className="text-xs text-gray-800 mb-1" numberOfLines={1}>
+            {post.review}
+          </Text>
 
-        <View className="flex-row items-center">
-          <Heart size={16} fill="#EF4444" color="#EF4444" />
+          {post.tags && post.tags.length > 0 && (
+            <View className="flex-row flex-wrap gap-1">
+              {post.tags.slice(0, 2).map((tag, index) => (
+                <View
+                  key={index}
+                  className="bg-blue-200 rounded-full px-1.5 py-0.5"
+                >
+                  <Text className="text-blue-800 text-[9px] font-medium">
+                    {tag}
+                  </Text>
+                </View>
+              ))}
+              {post.tags.length > 2 && (
+                <View className="bg-gray-200 rounded-full px-1.5 py-0.5">
+                  <Text className="text-gray-600 text-[9px] font-medium">
+                    +{post.tags.length - 2}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
+        <View className="flex-row items-center pt-1">
+          <Heart size={14} fill="#EF4444" color="#EF4444" />
           <Text className="text-xs text-gray-800 ml-1 mr-3">15</Text>
-          <MessageCircle size={16} color="#6B7280" />
+          <MessageCircle size={14} color="#6B7280" />
           <Text className="text-xs text-gray-800 ml-1">20</Text>
         </View>
       </View>

@@ -7,6 +7,7 @@ export type Post = {
   rating: number;
   photo?: string;
   review: string;
+  tags?: string[];
   createdAt: Date;
 };
 

@@ -14,17 +14,11 @@ export default function DiscoverScreen() {
           </AppText>
         </View>
 
-        <View className="px-4 py-3 items-center gap-3">
-          <Pressable className="border border-gray-400 rounded-lg px-5 py-2">
-            <AppText bold className="text-gray-700 mb-0">
-              FOR YOU
-            </AppText>
-          </Pressable>
-
-          <Pressable className="flex-row items-center gap-2">
-            <RotateCw size={16} color="#6B7280" />
-            <AppText size="small" className="text-gray-600 mb-0">
-              Regenerate Options
+        <View className="px-4 py-3 items-center">
+          <Pressable className="flex-row items-center gap-2 border border-gray-400 rounded-lg px-5 py-3 bg-white">
+            <RotateCw size={18} color="#1E40AF" />
+            <AppText bold className="text-gray-900 mb-0">
+              For You Options
             </AppText>
           </Pressable>
         </View>
