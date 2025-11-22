@@ -4,25 +4,53 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  Button,
+  ActivityIndicator,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import Star from "../../../public/icons/yellowStar.svg";
 import Award from "../../../public/icons/award.svg";
-// import AwardInvert from "../../../public/icons/awardInvert.svg";
 import { TopBar } from "@/components/TopBar";
+import { useAuth } from "@/context/AuthContext";
+import { getUserReviews, type Review } from "@/services/userService";
 
 export default function ProfileScreen() {
   const [isReview, setIsReview] = useState(true);
   const [isBadge, setIsBadge] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
-  const navigate = () => {
+
+  useEffect(() => {
+    if (isAuthenticated && user && isReview) {
+      loadUserReviews();
+    }
+  }, [isAuthenticated, user, isReview]);
+
+  const loadUserReviews = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const reviews = await getUserReviews(user.id);
+      setUserReviews(reviews);
+    } catch (error) {
+      console.error("Error loading user reviews:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
     router.replace("login");
   };
+
   const navigateToEditProfile = () => {
     router.push("edit-profile");
   };
@@ -45,18 +73,30 @@ export default function ProfileScreen() {
     setIsReview(false);
   };
 
+  // Show loading if not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <View className="flex-1 bg-blue justify-center items-center">
+        <ActivityIndicator size="large" color="#011A69" />
+        <Text className="text-base text-black mt-4">Loading user data...</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-blue">
       <TopBar />
       <View className="justify-center items-center p-5">
         <ProfilePic className="w-[50px] h-[100px]" />
         <Text className="text-3xl text-black font-bold p-3 tracking-wide">
-          John Doe
+          {user.name}
         </Text>
-        <Text className="text-base text-black mb-2">jdoe002@ucr.edu</Text>
+        <Text className="text-base text-black mb-2">{user.email}</Text>
         <View className="flex flex-row flex-wrap justify-between p-1">
           <View className="w-2/5 justify-center items-center">
-            <Text className="text-base text-black font-bold">20</Text>
+            <Text className="text-base text-black font-bold">
+              {userReviews.length}
+            </Text>
             <Text className="text-base text-black">Reviews</Text>
           </View>
           <View className="w-2/5 justify-center items-center">
@@ -67,7 +107,7 @@ export default function ProfileScreen() {
         <View className="w-full h-10 flex-row rounded-lg justify-center items-center mt-3">
           <TouchableOpacity
             className="w-[150px] h-6 bg-[#011A69] rounded-lg justify-center items-center mr-3"
-            onPress={navigate}
+            onPress={handleLogout}
           >
             <Text className="text-base text-white font-bold">Sign Out</Text>
           </TouchableOpacity>
@@ -81,7 +121,7 @@ export default function ProfileScreen() {
         <View className="w-full h-[100px] bg-[#295298] flex-row rounded-lg p-2">
           <Award width={20} height={20} />
           <Text className="text-base text-white font-bold ml-1">
-            Rank Level
+            Rank Level: {user.tier}
           </Text>
         </View>
         <View className="w-full h-10 bg-[#A1B1E4] flex-row rounded-full justify-center items-center mt-3 mb-3">
@@ -118,25 +158,45 @@ export default function ProfileScreen() {
         </View>
 
         {isReview ? (
-          // This View will appear when isVisible is true
           <ScrollView className="h-[190px] grow-0 w-full">
-            <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
-              <Text className="text-base text-black font-bold">Review</Text>
-            </View>
-            <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
-              <Text className="text-base text-black font-bold">Review</Text>
-            </View>
+            {loading ? (
+              <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
+                <ActivityIndicator size="small" color="#011A69" />
+                <Text className="text-base text-black mt-2">Loading reviews...</Text>
+              </View>
+            ) : userReviews.length > 0 ? (
+              userReviews.map((review) => (
+                <View 
+                  key={review.id} 
+                  className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3 p-3"
+                >
+                  <Text className="text-base text-black font-bold">
+                    {review.menu_item_name || "Menu Item"}
+                  </Text>
+                  <Text className="text-sm text-black text-center">
+                    {review.comment}
+                  </Text>
+                  <Text className="text-sm text-black">
+                    Rating: {review.rating}/5
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl justify-center items-center mb-3">
+                <Text className="text-base text-black font-bold">No reviews yet</Text>
+              </View>
+            )}
           </ScrollView>
         ) : (
           <View></View>
         )}
+
         {isBadge ? (
-          // This View will appear when isVisible is true
           <View className="w-full h-[120px] bg-[#C2D0FF] rounded-xl mb-3 p-1">
             <View className="justify-center items-center">
               <Text className="text-base text-black font-bold">Badges</Text>
             </View>
-            <View className="">
+            <View className="flex-row justify-center mt-2">
               <Award width={20} height={20} />
               <Award width={20} height={20} />
               <Award width={20} height={20} />

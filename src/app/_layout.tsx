@@ -12,6 +12,7 @@ import {
 } from "@expo-google-fonts/inter";
 import { Bayon_400Regular } from "@expo-google-fonts/bayon";
 import { PostsProvider } from "@/context/PostsContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout() {
   useFonts({
@@ -32,13 +33,16 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <PostsProvider>
-      <StatusBar style="auto" />
-      <Stack>
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
-      </Stack>
-    </PostsProvider>
+    <AuthProvider>
+      <PostsProvider>
+        <StatusBar style="auto" />
+        <Stack>
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="signup" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+        </Stack>
+      </PostsProvider>
+    </AuthProvider>
   );
 }
