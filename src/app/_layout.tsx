@@ -24,10 +24,10 @@ export default function RootLayout() {
   // Add this useEffect to fix dark mode error
   useEffect(() => {
     // This prevents the dark mode configuration error
-    if (typeof window !== 'undefined') {
-      // Set a default color scheme to avoid the media query issue
-      document.documentElement.style.setProperty('color-scheme', 'light');
-    }
+    // if (typeof window !== 'undefined') {
+    //   // Set a default color scheme to avoid the media query issue
+    //   document.documentElement.style.setProperty('color-scheme', 'light');
+    // }
   }, []);
 
   return (

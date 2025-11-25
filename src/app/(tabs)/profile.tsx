@@ -12,7 +12,7 @@ import { AppText } from "@/components/AppText";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import Star from "../../../public/icons/yellowStar.svg";
 import Award from "../../../public/icons/award.svg";
-// import AwardInvert from "../../../public/icons/awardInvert.svg";
+import AwardInvert from "../../../public/icons/awardInvert.svg";
 import { TopBar } from "@/components/TopBar";
 
 export default function ProfileScreen() {

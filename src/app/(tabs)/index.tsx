@@ -1,12 +1,18 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import Star from "../../../public/icons/yellowStar.svg";
-import { usePosts } from "@/context/PostsContext";
+import { Post, usePosts } from "@/context/PostsContext";
 import { HorizontalReviewCard } from "@/components/HorizontalReviewCard";
 import { TopBar } from "@/components/TopBar";
 import { SearchBar } from "@/components/SearchBar";
+import { useRouter } from "expo-router";
+import Review from "@/app/review";
 
 export default function HomeScreen() {
   const { posts } = usePosts();
+  const router = useRouter();
+  const reviewExpand = (id: string) => {
+    router.replace({pathname: "review", params: {id}});
+  };
 
   const recentPosts = posts.slice(0, 5);
 
@@ -49,7 +55,9 @@ export default function HomeScreen() {
         </View>
         <ScrollView horizontal={true} className="h-[360] flex-grow-0">
           {recentPosts.map((post) => (
+            <TouchableOpacity onPress={() => reviewExpand(post.id)}>
             <HorizontalReviewCard key={post.id} post={post} />
+            </TouchableOpacity>
           ))}
           {Array.from({ length: placeholderCount }, (_, i) => (
             <View
