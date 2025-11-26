@@ -5,9 +5,13 @@ const {
   updateMenuItem,
   deleteMenuItem,
   getMenuItemRating,
+  getPopularMenuItems,
 } = require("../controllers/menuItemController");
 
 const router = express.Router();
+
+// GET /api/menu-items/popular - Get popular menu items across all restaurants
+router.get("/popular", getPopularMenuItems);
 
 // GET /api/menu-items/:id - Get specific menu item with ratings
 router.get("/:id", getMenuItemById);

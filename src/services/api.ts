@@ -1,5 +1,5 @@
 const getApiBaseUrl = () => {
-  return "https://nontenurially-deducible-jett.ngrok-free.dev";
+  return "http://52.15.240.106:5000";
 };
 
 const API_BASE_URL = getApiBaseUrl();
