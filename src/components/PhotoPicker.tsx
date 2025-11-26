@@ -41,6 +41,59 @@ export function PhotoPicker({ photo, onPhotoChange }: PhotoPickerProps) {
     }
   };
 
+  const openCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (status === "granted") {
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+          onPhotoChange(result.assets[0].uri);
+        }
+      } else if (status === "undetermined") {
+        Alert.alert(
+          "Permission Required",
+          "Please grant camera access to take photos.",
+        );
+      } else {
+        Alert.alert(
+          "Permission Denied",
+          "Camera access was denied. Please enable it in your device settings to take photos.",
+        );
+      }
+    } catch {
+      Alert.alert("Error", "Failed to open camera. Please try again.");
+    }
+  };
+
+  const showImagePickerOptions = () => {
+    Alert.alert(
+      "Select Photo",
+      "Choose an option",
+      [
+        {
+          text: "Take Photo",
+          onPress: openCamera,
+        },
+        {
+          text: "Choose from Library",
+          onPress: openGallery,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
   return (
     <View className="mb-6">
       <Text
@@ -50,7 +103,7 @@ export function PhotoPicker({ photo, onPhotoChange }: PhotoPickerProps) {
         PHOTO
       </Text>
       <Pressable
-        onPress={openGallery}
+        onPress={showImagePickerOptions}
         className="bg-[#F5F5DC] rounded-lg border border-[#E5E5D5] h-[150px] justify-center items-center overflow-hidden"
       >
         {photo ? (

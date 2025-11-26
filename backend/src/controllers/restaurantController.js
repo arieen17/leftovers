@@ -80,6 +80,23 @@ const deleteRestaurant = async (req, res) => {
   }
 };
 
+const searchRestaurantsAndItems = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim() === "") {
+      return res.json({ restaurants: [], menuItems: [] });
+    }
+
+    const restaurants = await Restaurant.search(q);
+    const menuItems = await MenuItem.search(q);
+
+    res.json({ restaurants, menuItems });
+  } catch (error) {
+    console.error("❌ Error searching:", error);
+    res.status(500).json({ error: "Failed to search", details: error.message });
+  }
+};
+
 module.exports = {
   getAllRestaurants,
   getRestaurantById,
@@ -87,4 +104,5 @@ module.exports = {
   createRestaurant,
   updateRestaurant,
   deleteRestaurant,
+  searchRestaurantsAndItems,
 };

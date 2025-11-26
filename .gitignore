@@ -29,8 +29,12 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+.env
+.env.local
+.env.production
 
 # typescript
 *.tsbuildinfo
+recommendation-service/venv/
+*.pyc
+__pycache__/

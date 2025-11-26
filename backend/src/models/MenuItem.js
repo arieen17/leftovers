@@ -82,6 +82,49 @@ class MenuItem {
     );
     return result.rows[0];
   }
+
+  // Search menu items by name, description, category, or tags
+  static async search(query) {
+    const searchTerm = `%${query}%`;
+    const result = await pool.query(
+      `SELECT menu_items.*, 
+              COALESCE(AVG(reviews.rating), 0) as average_rating,
+              COUNT(reviews.id) as review_count
+       FROM menu_items 
+       LEFT JOIN reviews ON menu_items.id = reviews.menu_item_id
+       WHERE LOWER(menu_items.name) LIKE LOWER($1) 
+       OR LOWER(menu_items.description) LIKE LOWER($1)
+       OR LOWER(menu_items.category) LIKE LOWER($1)
+       OR EXISTS (
+         SELECT 1 FROM unnest(menu_items.tags) AS tag 
+         WHERE LOWER(tag) LIKE LOWER($1)
+       )
+       GROUP BY menu_items.id
+       ORDER BY menu_items.name`,
+      [searchTerm],
+    );
+    return result.rows;
+  }
+
+  // Get popular menu items across all restaurants
+  static async getPopularItems(limit = 10) {
+    const result = await pool.query(
+      `SELECT 
+        menu_items.*,
+        restaurants.name as restaurant_name,
+        COALESCE(AVG(reviews.rating), 0) as average_rating,
+        COUNT(reviews.id) as review_count
+      FROM menu_items 
+      LEFT JOIN reviews ON menu_items.id = reviews.menu_item_id
+      LEFT JOIN restaurants ON menu_items.restaurant_id = restaurants.id
+      GROUP BY menu_items.id, restaurants.name
+      HAVING COUNT(reviews.id) >= 1
+      ORDER BY average_rating DESC, review_count DESC
+      LIMIT $1`,
+      [limit],
+    );
+    return result.rows;
+  }
 }
 
 module.exports = MenuItem;

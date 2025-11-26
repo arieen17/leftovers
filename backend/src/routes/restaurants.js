@@ -6,10 +6,14 @@ const {
   createRestaurant,
   updateRestaurant,
   deleteRestaurant,
+  searchRestaurantsAndItems,
 } = require("../controllers/restaurantController");
 const pool = require("../../database/config");
 
 const router = express.Router();
+
+// GET /api/restaurants/search?q=query - Search restaurants and menu items
+router.get("/search", searchRestaurantsAndItems);
 
 // GET /api/restaurants
 router.get("/", getAllRestaurants);

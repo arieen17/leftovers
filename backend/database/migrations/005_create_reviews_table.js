@@ -23,4 +23,4 @@ const createReviewsTable = async () => {
   }
 };
 
-module.exports = {createReviewsTable};
+module.exports = { createReviewsTable };
