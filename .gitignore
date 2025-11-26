@@ -35,3 +35,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+recommendation-service/venv/
+*.pyc
+__pycache__/
