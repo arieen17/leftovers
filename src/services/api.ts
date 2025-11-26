@@ -1,10 +1,5 @@
 const getApiBaseUrl = () => {
-  // Development mode - using IP address for physical devices
-  if (__DEV__) {
-    return "http://192.168.1.74:5000"; // for physical devices: "http://YOUR_IP:5000" (can switch out)
-    // return "http://localhost:5000"; // for simulator (can switch out)
-  }
-  return "http://52.15.240.1:5000";
+  return "http://52.15.240.106:5000";
 };
 
 const API_BASE_URL = getApiBaseUrl();

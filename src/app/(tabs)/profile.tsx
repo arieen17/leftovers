@@ -1,20 +1,45 @@
-import { View, ScrollView, Text, TouchableOpacity } from "react-native";
-import { useState } from "react";
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { ChefHat, Star, Heart, MessageCircle } from "lucide-react-native";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import { TopBar } from "@/components/TopBar";
 import { AppText } from "@/components/AppText";
-import { usePosts } from "@/context/PostsContext";
+import { useAuth } from "@/context/AuthContext";
+import { getUserReviews, type Review } from "@/services/userService";
 
 export default function ProfileScreen() {
-  const { posts } = usePosts();
   const [isReview, setIsReview] = useState(true);
   const [isBadge, setIsBadge] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const navigate = () => {
+  useEffect(() => {
+    if (isAuthenticated && user && isReview) {
+      loadUserReviews();
+    }
+  }, [isAuthenticated, user, isReview]);
+
+  const loadUserReviews = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const reviews = await getUserReviews(user.id);
+      setUserReviews(reviews);
+    } catch (error) {
+      console.error("Error loading user reviews:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
     router.replace("login");
   };
 
@@ -40,7 +65,8 @@ export default function ProfileScreen() {
     setIsReview(false);
   };
 
-  const getTimeAgo = (date: Date) => {
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -49,8 +75,19 @@ export default function ProfileScreen() {
     return `${diffHours}hr ago`;
   };
 
-  const totalLikes = posts.length * 15;
-  const reviewCount = posts.length;
+  // Calculate totals from real data
+  const reviewCount = userReviews.length;
+  const totalLikes = userReviews.length * 15; // Filler - multiply by average likes per review
+
+  // Show loading if not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#011A69" />
+        <Text className="text-base text-gray-600 mt-4">Loading user data...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -63,22 +100,22 @@ export default function ProfileScreen() {
             </View>
 
             <Text className="text-2xl font-bold text-gray-900 mb-1">
-              John Doe
+              {user.name}
             </Text>
             <Text className="text-base text-gray-600 mb-4">
-              jdoe002@ucr.edu
+              {user.email}
             </Text>
 
             <View className="flex-row gap-8 mb-4">
               <View className="items-center">
                 <Text className="text-2xl font-bold text-gray-900">
-                  {reviewCount || 52}
+                  {reviewCount}
                 </Text>
                 <Text className="text-sm text-gray-600">Reviews</Text>
               </View>
               <View className="items-center">
                 <Text className="text-2xl font-bold text-gray-900">
-                  {totalLikes || 350}
+                  {totalLikes}
                 </Text>
                 <Text className="text-sm text-gray-600">Likes</Text>
               </View>
@@ -86,7 +123,7 @@ export default function ProfileScreen() {
 
             <View className="flex-row gap-3 w-full max-w-xs mb-4">
               <TouchableOpacity
-                onPress={navigate}
+                onPress={handleLogout}
                 className="flex-1 bg-[#011A69] rounded-lg py-3 px-4 items-center"
               >
                 <Text className="text-white font-bold text-sm uppercase">
@@ -108,7 +145,7 @@ export default function ProfileScreen() {
             <View className="flex-row items-center mb-3">
               <ChefHat size={24} color="#ffffff" />
               <Text className="text-white font-bold text-lg ml-2">
-                Food Explorer
+                {user.tier} Food Explorer
               </Text>
             </View>
             <View className="h-3 bg-white/30 rounded-full overflow-hidden">
@@ -154,10 +191,15 @@ export default function ProfileScreen() {
 
           {isReview && (
             <View className="pb-6">
-              {posts.length > 0 ? (
-                posts.map((post) => (
+              {loading ? (
+                <View className="bg-[#C2D0FF] rounded-xl p-8 items-center">
+                  <ActivityIndicator size="large" color="#011A69" />
+                  <Text className="text-gray-600 mt-2">Loading reviews...</Text>
+                </View>
+              ) : userReviews.length > 0 ? (
+                userReviews.map((review) => (
                   <View
-                    key={post.id}
+                    key={review.id}
                     className="bg-[#C2D0FF] rounded-xl p-5 mb-3"
                   >
                     <View className="flex-row justify-between items-start mb-3">
@@ -167,10 +209,10 @@ export default function ProfileScreen() {
                           bold
                           className="text-gray-900 mb-1"
                         >
-                          {post.menuItem}
+                          {review.menu_item_name || "Menu Item"}
                         </AppText>
                         <AppText size="medium" className="text-gray-600">
-                          {post.restaurant}
+                          {review.restaurant_name || "Restaurant"}
                         </AppText>
                       </View>
                       <View className="flex-row items-center gap-1">
@@ -180,10 +222,10 @@ export default function ProfileScreen() {
                               key={star}
                               size={16}
                               fill={
-                                star <= post.rating ? "#FFD700" : "transparent"
+                                star <= review.rating ? "#FFD700" : "transparent"
                               }
                               color={
-                                star <= post.rating ? "#FFD700" : "#D1D5DB"
+                                star <= review.rating ? "#FFD700" : "#D1D5DB"
                               }
                               strokeWidth={2}
                             />
@@ -191,6 +233,12 @@ export default function ProfileScreen() {
                         )}
                       </View>
                     </View>
+
+                    {review.comment && (
+                      <AppText size="medium" className="text-gray-700 mb-3">
+                        {review.comment}
+                      </AppText>
+                    )}
 
                     <View className="h-px bg-gray-300 my-3" />
 
@@ -202,7 +250,7 @@ export default function ProfileScreen() {
                             size="small"
                             className="text-gray-700 ml-1 mb-0"
                           >
-                            19
+                            15
                           </AppText>
                         </View>
                         <View className="flex-row items-center">
@@ -211,12 +259,12 @@ export default function ProfileScreen() {
                             size="small"
                             className="text-gray-700 ml-1 mb-0"
                           >
-                            5
+                            3
                           </AppText>
                         </View>
                       </View>
                       <AppText size="small" className="text-gray-500 mb-0">
-                        {getTimeAgo(post.createdAt)}
+                        {getTimeAgo(review.created_at)}
                       </AppText>
                     </View>
                   </View>

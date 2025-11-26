@@ -105,6 +105,26 @@ class MenuItem {
     );
     return result.rows;
   }
+
+  // Get popular menu items across all restaurants
+  static async getPopularItems(limit = 10) {
+    const result = await pool.query(
+      `SELECT 
+        menu_items.*,
+        restaurants.name as restaurant_name,
+        COALESCE(AVG(reviews.rating), 0) as average_rating,
+        COUNT(reviews.id) as review_count
+      FROM menu_items 
+      LEFT JOIN reviews ON menu_items.id = reviews.menu_item_id
+      LEFT JOIN restaurants ON menu_items.restaurant_id = restaurants.id
+      GROUP BY menu_items.id, restaurants.name
+      HAVING COUNT(reviews.id) >= 1
+      ORDER BY average_rating DESC, review_count DESC
+      LIMIT $1`,
+      [limit],
+    );
+    return result.rows;
+  }
 }
 
 module.exports = MenuItem;

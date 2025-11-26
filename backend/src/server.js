@@ -21,6 +21,8 @@ app.use("/api/reviews", require("./routes/reviews"));
 // Menu item routes
 app.use("/api/menu-items", require("./routes/menuItems"));
 
+app.use('/api/recommendations', require('./routes/recommendations'));
+
 // Maps routes
 app.use("/api/maps", require("./routes/maps"));
 
@@ -34,5 +36,4 @@ app.get("/api/health", (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 R'ATE backend running on port ${PORT}`);
   console.log(`📡 Listening on all network interfaces (0.0.0.0)`);
-  console.log(`💻 Access from other devices: http://192.168.1.74:${PORT}`);
 });

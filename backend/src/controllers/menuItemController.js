@@ -54,10 +54,21 @@ const getMenuItemRating = async (req, res) => {
   }
 };
 
+const getPopularMenuItems = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const popularItems = await MenuItem.getPopularItems(limit);
+    res.json(popularItems);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch popular menu items" });
+  }
+};
+
 module.exports = {
   getMenuItemById,
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
   getMenuItemRating,
+  getPopularMenuItems,
 };
