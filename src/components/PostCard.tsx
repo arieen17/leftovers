@@ -78,9 +78,19 @@ export function PostCard({ post }: PostCardProps) {
         />
       )}
 
-      <AppText size="medium" className="text-gray-800">
+      <AppText size="medium" className="text-gray-800 mb-3">
         {post.review}
       </AppText>
+
+      {post.tags && post.tags.length > 0 && (
+        <View className="flex-row flex-wrap gap-2 mt-2">
+          {post.tags.map((tag, index) => (
+            <View key={index} className="bg-blue-100 rounded-full px-3 py-1.5">
+              <Text className="text-blue-800 text-xs font-medium">{tag}</Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
