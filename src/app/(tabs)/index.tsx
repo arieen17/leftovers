@@ -9,7 +9,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import Star from "../../../public/icons/yellowStar.svg";
-import { usePosts } from "@/context/PostsContext";
+import { Post, usePosts } from "@/context/PostsContext";
 import { HorizontalReviewCard } from "@/components/HorizontalReviewCard";
 import { TopBar } from "@/components/TopBar";
 import { SearchBar } from "@/components/SearchBar";
