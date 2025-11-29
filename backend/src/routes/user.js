@@ -5,6 +5,6 @@ const { authenticate } = require("../middleware/auth"); // If you have auth midd
 const router = express.Router();
 
 // PUT /api/users/:id - Update user profile
-router.put("/:id", updateUser); // Add authenticate middleware if needed
+router.put("/:id", updateUser); 
 
 module.exports = router;
