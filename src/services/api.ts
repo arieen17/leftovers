@@ -1,5 +1,11 @@
 const getApiBaseUrl = () => {
-  return "http://52.15.240.106:5000";
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname === "localhost"
+  ) {
+    return "http://localhost:5000";
+  }
+  return process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -18,7 +24,7 @@ export const API_CONFIG = {
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
@@ -38,7 +44,7 @@ export async function apiRequest<T>(
       throw new Error(
         errorData.error ||
           errorData.message ||
-          `HTTP error! status: ${response.status}`
+          `HTTP error! status: ${response.status}`,
       );
     }
 

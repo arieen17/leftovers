@@ -6,30 +6,65 @@ class User {
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
-    return result.rows[0]; // Return undefined if no user found
+    return result.rows[0];
+  }
+
+  static async findById(userId) {
+    const result = await pool.query("SELECT * FROM users WHERE id = $1", [
+      userId,
+    ]);
+    return result.rows[0];
   }
 
   static async create(userData) {
-    // Use userData.password directly (already hashed in controller)
     const result = await pool.query(
       `INSERT INTO users (email, password, name, birthday, phone_number, address) 
-     VALUES ($1, $2, $3, $4, $5, $6) 
-     RETURNING id, email, name, tier, birthday, phone_number, address, created_at`,
+       VALUES ($1, $2, $3, $4, $5, $6) 
+       RETURNING id, email, name, tier, birthday, phone_number, address, created_at`,
       [
         userData.email,
-        userData.password, // ← Use the already-hashed password from controller
+        userData.password,
         userData.name,
         userData.birthday,
         userData.phone_number,
         userData.address,
       ],
     );
-
     return result.rows[0];
   }
 
   static async verifyPassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  static async update(userId, updateData) {
+    const fields = [];
+    const values = [];
+    let paramCount = 1;
+
+    for (const [key, value] of Object.entries(updateData)) {
+      if (value !== undefined) {
+        fields.push(`${key} = $${paramCount}`);
+        values.push(value);
+        paramCount++;
+      }
+    }
+
+    if (fields.length === 0) {
+      throw new Error("No fields to update");
+    }
+
+    values.push(userId);
+
+    const query = `
+      UPDATE users 
+      SET ${fields.join(", ")} 
+      WHERE id = $${paramCount} 
+      RETURNING id, email, name, tier, birthday, phone_number, address, created_at
+    `;
+
+    const result = await pool.query(query, values);
+    return result.rows[0];
   }
 }
 

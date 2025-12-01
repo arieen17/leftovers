@@ -1,4 +1,12 @@
-import { View, TextInput, Text, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from "react-native";
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { useState } from "react";
 import BearIcon from "../../public/images/bear.svg";
 import { useRouter } from "expo-router";
@@ -11,7 +19,7 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
   const { login: authLogin } = useAuth();
 
@@ -26,32 +34,31 @@ export default function SignupScreen() {
       return;
     }
 
-    if (!email.endsWith('@ucr.edu')) {
+    if (!email.endsWith("@ucr.edu")) {
       Alert.alert("Error", "Please use a valid UCR email address");
       return;
     }
 
     try {
       setLoading(true);
-      const credentials: SignupCredentials = { 
-        email, 
-        password, 
+      const credentials: SignupCredentials = {
+        email,
+        password,
         name,
         // Optional fields can be added later
       };
       const response = await signup(credentials);
-      
+
       // Update auth context with user data
       authLogin(response.user);
-      
+
       // Navigate to main app
       router.replace("(tabs)");
-      
     } catch (error: any) {
       console.error("Signup error:", error);
       Alert.alert(
-        "Signup Failed", 
-        error.message || "Unable to create account. Please try again."
+        "Signup Failed",
+        error.message || "Unable to create account. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -133,7 +140,9 @@ export default function SignupScreen() {
               {loading ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text className="text-white text-base font-semibold">Sign Up</Text>
+                <Text className="text-white text-base font-semibold">
+                  Sign Up
+                </Text>
               )}
             </TouchableOpacity>
 
@@ -143,7 +152,7 @@ export default function SignupScreen() {
               <View className="flex-1 h-px bg-gray-500" />
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               className="w-full h-12 bg-white rounded-full justify-center items-center shadow-sm"
               onPress={navigateToLogin}
             >

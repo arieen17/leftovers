@@ -1,141 +1,98 @@
-Run npm run dev from backend directory to start server
+R'ATE Backend
 
-Backend Endpoints:
+Setup Instructions:
 
-Base URL: http://localhost:5000
+1. Install Dependencies
+   npm install
+
+2. Environment Setup
+   Create .env file in backend directory with:
+   JWT_SECRET=your-super-secret-jwt-key-here
+   JWT_EXPIRES_IN=7d
+   NODE_ENV=development
+   EXPO_PUBLIC_API_URL= "add ur IP Address"
+
+3. Database Connection
+   Database is hosted on AWS RDS
+   Connection string: postgresql://postgres:RateApp2024!@rateapp.c98oqscikd1q.us-east-2.rds.amazonaws.com:5432/postgres
+
+4. Recommendation Service Setup (REQUIRED)
+   Navigate to recommendation-service directory (leftovers/recommendation-service):
+   cd recommendation-service
+
+   Create Python virtual environment:
+   python3 -m venv venv
+
+   Activate virtual environment:
+   source venv/bin/activate
+
+   Install Python dependencies:
+   pip install -r requirements.txt
+
+   The recommendation service will be automatically started with the backend.
+
+5. Run Backend (starts both services)
+   Development: npm run dev
+   Production: npm start
+
+6. Services run on:
+   Backend: http://localhost:5000
+   Recommendation Service: http://localhost:8000
+
+API Endpoints:
 
 Authentication:
+POST /api/auth/signup - Create user account
+POST /api/auth/login - User login
+GET /api/auth/test - Test endpoint
 
-POST /api/auth/signup
-
-Create new user account
-
-Request: {"email": "user@ucr.edu", "password": "password123", "name": "John Doe", "birthday": "2000-01-15", "phone_number": "555-1234", "address": "123 Street"} (birthday, phone_number, address optional)
-
-Response: {"message": "User created successfully", "token": "jwt_token_here", "user": {"id": 1, "email": "user@ucr.edu", "name": "John Doe", "tier": "Bronze", "birthday": "2000-01-15T00:00:00.000Z", "phone_number": "555-1234", "address": "123 Street"}}
-
-POST /api/auth/login
-
-User login
-
-Request: {"email": "user@ucr.edu", "password": "password123"}
-
-Response: {"message": "Login successful", "token": "jwt_token_here", "user": {"id": 1, "email": "user@ucr.edu", "name": "John Doe", "tier": "Bronze", "birthday": "2000-01-15T00:00:00.000Z", "phone_number": "555-1234", "address": "123 Street"}}
-
-GET /api/auth/test
-
-Test endpoint
-
-Response: {"message": "Auth routes are working!"}
-
-POST /api/auth/verify-ucr-email
-
-TODO - Placeholder
-
-Response: {"message": "UCR email verification - TODO"}
-
-Restaurant:
-
-GET /api/restaurants
-
-List all restaurants
-
-Response: [{"id": 1, "name": "Example Restaurant 1", "address": "123 University Drive...", "latitude": "33.97500000", "longitude": "-117.32900000", "cuisine_type": "American", "hours": {"monday": "8:00 AM - 9:00 PM", ...}, "image_url": "", "created_at": "2025-11-02T20:49:46.988Z"}]
-
-GET /api/restaurants/:id
-
-Get restaurant details
-
-Response: {"id": 1, "name": "Example Restaurant 1", "address": "123 University Drive...", "latitude": "33.97500000", "longitude": "-117.32900000", "cuisine_type": "American", "hours": {...}, "image_url": "", "created_at": "2025-11-02T20:49:46.988Z"}
-
-GET /api/restaurants/:id/menu
-
-Get restaurant menu items with ratings
-
-Response: [{"id": 1, "restaurant_id": 1, "name": "Classic Burger", "description": "Juicy beef patty...", "price": "12.99", "category": "Main Course", "image_url": null, "tags": ["beef", "popular"], "created_at": "2025-11-02T21:01:05.834Z", "average_rating": "5.0000000000000000", "review_count": "1"}]
-
-POST /api/restaurants
-
-Create restaurant (Admin)
-
-Request: {"name": "New Restaurant", "address": "123 Street...", "latitude": 33.9750, "longitude": -117.3290, "cuisine_type": "Italian", "hours": {"monday": "9AM-5PM", ...}, "image_url": ""}
-
-Response: {"id": 5, "name": "New Restaurant", ...}
-
-PUT /api/restaurants/:id
-
-Update restaurant (Admin)
-
-Request: {"name": "Updated Name", "cuisine_type": "Updated Cuisine"}
-
-Response: {"id": 1, "name": "Updated Name", ...}
-
-DELETE /api/restaurants/:id
-
-Delete restaurant (Admin)
-
-Response: {"message": "Restaurant deleted successfully", "restaurant": {"id": 1, "name": "Example Restaurant 1", ...}}
+Restaurants:
+GET /api/restaurants - List all restaurants
+GET /api/restaurants/:id - Get restaurant details
+GET /api/restaurants/:id/menu - Get restaurant menu
+POST /api/restaurants - Create restaurant (Admin)
+PUT /api/restaurants/:id - Update restaurant (Admin)
+DELETE /api/restaurants/:id - Delete restaurant (Admin)
 
 Menu Items:
+GET /api/menu-items/:id - Get menu item with ratings
+GET /api/menu-items/:id/rating - Get rating stats
+GET /api/menu-items/popular - Get popular menu items
+POST /api/menu-items - Create menu item (Admin)
+PUT /api/menu-items/:id - Update menu item (Admin)
+DELETE /api/menu-items/:id - Delete menu item (Admin)
 
-GET /api/menu-items/:id
+Reviews:
+POST /api/reviews - Create review (Auth required)
+GET /api/reviews/menu-item/:menuItemId - Get reviews for menu item
+GET /api/reviews/user/:userId - Get reviews by user
 
-Get menu item with ratings
+Review Interactions:
+POST /api/reviews/:id/like - Like a review (Auth required)
+DELETE /api/reviews/:id/like - Unlike a review (Auth required)
+POST /api/reviews/:id/comments - Add comment to review (Auth required)
+GET /api/reviews/:id/comments - Get comments for review
+POST /api/reviews/comments/:id/like - Like a comment (Auth required)
+DELETE /api/reviews/comments/:id/like - Unlike a comment (Auth required)
 
-Response: {"id": 1, "restaurant_id": 1, "name": "Classic Burger", "description": "Juicy beef patty...", "price": "12.99", "category": "Main Course", "image_url": null, "tags": ["beef", "popular"], "created_at": "2025-11-02T21:01:05.834Z", "average_rating": "5.0000000000000000", "review_count": "1"}
+Users:
+PUT /api/users/:id - Update user profile (Auth required)
 
-GET /api/menu-items/:id/rating
-
-Get rating stats only
-
-Response: {"average_rating": "5.0000000000000000", "review_count": "1"}
-
-POST /api/menu-items
-
-Create menu item (Admin)
-
-Request: {"restaurant_id": 1, "name": "New Item", "description": "Item description", "price": 9.99, "category": "Appetizers", "image_url": "", "tags": ["vegetarian"]}
-
-Response: {"id": 10, "restaurant_id": 1, "name": "New Item", ...}
-
-PUT /api/menu-items/:id
-
-Update menu item (Admin)
-
-Request: {"name": "Updated Item Name", "price": 10.99}
-
-Response: {"id": 1, "name": "Updated Item Name", ...}
-
-DELETE /api/menu-items/:id
-
-Delete menu item (Admin)
-
-Response: {"message": "Menu item deleted successfully", "menuItem": {"id": 1, "name": "Classic Burger", ...}}
-
-Review:
-
-POST /api/reviews
-
-Create review (REQUIRES AUTH HEADER: Authorization: Bearer token)
-
-Request: {"user_id": 1, "menu_item_id": 1, "rating": 5, "comment": "Amazing food!", "photos": ["url1", "url2"]}
-
-Response: {"id": 1, "user_id": 1, "menu_item_id": 1, "rating": 5, "comment": "Amazing food!", "photos": ["url1", "url2"], "created_at": "2025-11-02T23:09:03.048Z", "updated_at": "2025-11-02T23:09:03.048Z"}
-
-GET /api/reviews/menu-item/:menuItemId
-
-Get reviews for a menu item
-
-Response: [{"id": 1, "user_id": 1, "menu_item_id": 1, "rating": 5, "comment": "Amazing food!", "photos": [], "created_at": "2025-11-02T23:09:03.048Z", "updated_at": "2025-11-02T23:09:03.048Z", "user_name": "Review Tester", "user_tier": "Bronze"}]
-
-GET /api/reviews/user/:userId
-
-Get reviews by a user
-
-Response: [{"id": 1, "user_id": 1, "menu_item_id": 1, "rating": 5, "comment": "Amazing food!", "photos": [], "created_at": "2025-11-02T23:09:03.048Z", "updated_at": "2025-11-02T23:09:03.048Z", "menu_item_name": "Classic Burger", "restaurant_name": "Example Restaurant 1"}]
+Recommendations:
+GET /api/recommendations/user/:userId - Get personalized recommendations
+(Requires Python recommendation service running on port 8000)
 
 Health:
+GET /api/health - Backend status
 
-GET /api/health
-Backend status
-Response: {"status": "✅ Backend is running!", "timestamp": "2025-10-28T23:54:12.127Z"}
+Dependencies:
+express - Web framework
+pg - PostgreSQL client
+bcryptjs - Password hashing
+jsonwebtoken - JWT authentication
+cors - Cross-origin resource sharing
+axios - HTTP client for recommendation service
+dotenv - Environment variables
+
+Python Recommendation Service Dependencies:
+fastapi, uvicorn, pandas, numpy, scikit-learn, psycopg2-binary

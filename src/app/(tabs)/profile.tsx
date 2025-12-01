@@ -1,12 +1,19 @@
-import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import {
+  View,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { ChefHat, Star, Heart, MessageCircle } from "lucide-react-native";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import { TopBar } from "@/components/TopBar";
 import { AppText } from "@/components/AppText";
 import { useAuth } from "@/context/AuthContext";
 import { getUserReviews, type Review } from "@/services/userService";
+import { getCurrentUser } from "@/services/authService";
 
 export default function ProfileScreen() {
   const [isReview, setIsReview] = useState(true);
@@ -14,19 +21,31 @@ export default function ProfileScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [userReviews, setUserReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
-  
-  const { user, logout, isAuthenticated } = useAuth();
+
+  const { user, logout, isAuthenticated, login } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (isAuthenticated && user && isReview) {
-      loadUserReviews();
-    }
-  }, [isAuthenticated, user, isReview]);
+  // Sync user data when screen comes into focus, but only if it changed
+  useFocusEffect(
+    useCallback(() => {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        // Only update if user data actually changed to prevent infinite loops
+        if (
+          !user ||
+          currentUser.id !== user.id ||
+          currentUser.name !== user.name ||
+          currentUser.email !== user.email
+        ) {
+          login({ ...currentUser });
+        }
+      }
+    }, [login, user?.id, user?.name, user?.email]),
+  );
 
-  const loadUserReviews = async () => {
+  const loadUserReviews = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const reviews = await getUserReviews(user.id);
@@ -36,7 +55,13 @@ export default function ProfileScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (isAuthenticated && user && isReview) {
+      loadUserReviews();
+    }
+  }, [isAuthenticated, user?.id, isReview, loadUserReviews]);
 
   const handleLogout = () => {
     logout();
@@ -75,16 +100,16 @@ export default function ProfileScreen() {
     return `${diffHours}hr ago`;
   };
 
-  // Calculate totals from real data
   const reviewCount = userReviews.length;
-  const totalLikes = userReviews.length * 15; // Filler - multiply by average likes per review
+  const totalLikes = userReviews.length * 15;
 
-  // Show loading if not authenticated
   if (!isAuthenticated || !user) {
     return (
       <View className="flex-1 bg-gray-50 justify-center items-center">
         <ActivityIndicator size="large" color="#011A69" />
-        <Text className="text-base text-gray-600 mt-4">Loading user data...</Text>
+        <Text className="text-base text-gray-600 mt-4">
+          Loading user data...
+        </Text>
       </View>
     );
   }
@@ -102,9 +127,7 @@ export default function ProfileScreen() {
             <Text className="text-2xl font-bold text-gray-900 mb-1">
               {user.name}
             </Text>
-            <Text className="text-base text-gray-600 mb-4">
-              {user.email}
-            </Text>
+            <Text className="text-base text-gray-600 mb-4">{user.email}</Text>
 
             <View className="flex-row gap-8 mb-4">
               <View className="items-center">
@@ -222,14 +245,16 @@ export default function ProfileScreen() {
                               key={star}
                               size={16}
                               fill={
-                                star <= review.rating ? "#FFD700" : "transparent"
+                                star <= review.rating
+                                  ? "#FFD700"
+                                  : "transparent"
                               }
                               color={
                                 star <= review.rating ? "#FFD700" : "#D1D5DB"
                               }
                               strokeWidth={2}
                             />
-                          )
+                          ),
                         )}
                       </View>
                     </View>

@@ -1,98 +1,125 @@
-import { useState } from "react";
-import {
-  View,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
+import { View, ScrollView, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { TopBar } from "@/components/TopBar";
 import { FormField } from "@/components/FormField";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { AppText } from "@/components/AppText";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("jdoe002@ucr.edu");
-  const [profilePhoto, setProfilePhoto] = useState<string | undefined>();
+  const { user, isAuthenticated } = useAuth();
 
-  const handleSave = () => {
-    // we need to implement the backend logic to update the profile
-    Alert.alert("Success", "Profile updated successfully!", [
-      {
-        text: "OK",
-        onPress: () => router.back(),
-      },
-    ]);
-  };
-
-  const handleCancel = () => {
+  const handleGoBack = () => {
     router.back();
   };
 
+  if (!isAuthenticated || !user) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <Text className="text-base text-gray-600">Loading user data...</Text>
+      </View>
+    );
+  }
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1"
-    >
-      <View className="flex-1 bg-blue">
-        <TopBar />
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="p-6">
-            <View className="bg-gray-50 rounded-2xl p-6">
-              <AppText
-                size="heading"
-                bold
-                className="mb-6 text-center text-black"
-              >
-                Edit Profile
-              </AppText>
+    <View className="flex-1 bg-blue">
+      <TopBar />
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="p-6">
+          <View className="bg-gray-50 rounded-2xl p-6">
+            <AppText
+              size="heading"
+              bold
+              className="mb-6 text-center text-black"
+            >
+              Profile Information
+            </AppText>
 
-              <PhotoPicker
-                photo={profilePhoto}
-                onPhotoChange={setProfilePhoto}
-              />
+            <PhotoPicker photo={undefined} onPhotoChange={() => {}} />
 
-              <FormField
-                label="NAME"
-                value={name}
-                placeholder="Enter your name"
-                onChangeText={setName}
-              />
+            <FormField
+              label="NAME"
+              value={user.name || ""}
+              placeholder="Enter your name"
+              onChangeText={() => {}}
+              editable={false}
+            />
 
-              <FormField
-                label="EMAIL"
-                value={email}
-                placeholder="Enter your email"
-                onChangeText={setEmail}
-              />
-
-              <View className="flex-row justify-between mt-4">
-                <TouchableOpacity
-                  className="flex-1 bg-gray-300 rounded-lg justify-center items-center py-4 mr-3"
-                  onPress={handleCancel}
-                >
-                  <Text className="text-base text-black font-bold">Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 bg-[#295298] rounded-lg justify-center items-center py-4"
-                  onPress={handleSave}
-                >
-                  <Text className="text-base text-white font-bold">Save</Text>
-                </TouchableOpacity>
+            <View className="mb-6">
+              <Text className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]">
+                EMAIL
+              </Text>
+              <View className="flex-row items-center bg-gray-200 rounded-lg px-4 py-3 border border-[#E5E5D5]">
+                <Text className="flex-1 text-base text-gray-600">
+                  {user.email}
+                </Text>
+                <Text className="text-xs text-gray-500 ml-2">
+                  (UCR Verified)
+                </Text>
               </View>
             </View>
+
+            {user.birthday && (
+              <View className="mb-6">
+                <Text className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]">
+                  BIRTHDAY
+                </Text>
+                <View className="bg-gray-200 rounded-lg px-4 py-3 border border-[#E5E5D5]">
+                  <Text className="text-base text-gray-600">
+                    {user.birthday}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {user.phone_number && (
+              <View className="mb-6">
+                <Text className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]">
+                  PHONE NUMBER
+                </Text>
+                <View className="bg-gray-200 rounded-lg px-4 py-3 border border-[#E5E5D5]">
+                  <Text className="text-base text-gray-600">
+                    {user.phone_number}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {user.address && (
+              <View className="mb-6">
+                <Text className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]">
+                  ADDRESS
+                </Text>
+                <View className="bg-gray-200 rounded-lg px-4 py-3 border border-[#E5E5D5]">
+                  <Text className="text-base text-gray-600">
+                    {user.address}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            <View className="mt-4">
+              <TouchableOpacity
+                className="w-full bg-[#295298] rounded-lg justify-center items-center py-4"
+                onPress={handleGoBack}
+              >
+                <Text className="text-base text-white font-bold">Go Back</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="mt-4">
+              <Text className="text-xs text-gray-500 text-center">
+                Profile editing will be available in a future update
+              </Text>
+            </View>
           </View>
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
