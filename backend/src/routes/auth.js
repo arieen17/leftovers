@@ -11,7 +11,6 @@ router.get("/test", (req, res) => {
 // POST /api/auth/signup
 router.post("/signup", signup);
 
-// Keep the other routes as placeholders for now
 router.post("/login", login);
 
 router.post("/verify-ucr-email", (req, res) => {
