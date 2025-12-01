@@ -11,26 +11,43 @@ class ReviewComment {
     return result.rows[0];
   }
 
-  static async getByReviewId(reviewId) {
-    const result = await pool.query(
-      `SELECT 
+  static async getByReviewId(reviewId, userId = null) {
+    let query = `
+      SELECT 
         rc.*,
         u.name as user_name,
-        u.tier as user_tier,
-        COUNT(DISTINCT cl.id) as like_count,
+        u.tier as user_tier
+    `;
+    
+    if (userId) {
+      query += `,
         EXISTS(SELECT 1 FROM comment_likes WHERE comment_id = rc.id AND user_id = $2) as user_liked
+      `;
+    } else {
+      query += `, false as user_liked`;
+    }
+    
+    query += `
       FROM review_comments rc
       LEFT JOIN users u ON rc.user_id = u.id
-      LEFT JOIN comment_likes cl ON rc.id = cl.comment_id
       WHERE rc.review_id = $1
+<<<<<<< HEAD
       GROUP BY rc.id, u.name, u.tier
       ORDER BY rc.created_at ASC`,
       [reviewId, userId], // userId for checking if current user liked comment
     );
+=======
+      ORDER BY rc.created_at ASC
+    `;
+    
+    const params = userId ? [reviewId, userId] : [reviewId];
+    const result = await pool.query(query, params);
+>>>>>>> df3f53951ecad7805d52d9e5e5ed348ca4d74471
     return result.rows;
   }
 
   static async likeComment(userId, commentId) {
+<<<<<<< HEAD
     const result = await pool.query(
       `INSERT INTO comment_likes (user_id, comment_id) 
        VALUES ($1, $2) 
@@ -48,6 +65,81 @@ class ReviewComment {
       [userId, commentId],
     );
     return result.rows[0];
+=======
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Insert the like
+      const likeResult = await client.query(
+        `INSERT INTO comment_likes (user_id, comment_id) 
+         VALUES ($1, $2) 
+         RETURNING *`,
+        [userId, commentId]
+      );
+      
+      // Increment the comment like count
+      await client.query(
+        `UPDATE review_comments SET like_count = like_count + 1 WHERE id = $1`,
+        [commentId]
+      );
+      
+      await client.query('COMMIT');
+      
+      // Get updated comment with counts
+      const commentResult = await client.query(
+        `SELECT *, 
+         EXISTS(SELECT 1 FROM comment_likes WHERE comment_id = $1 AND user_id = $2) as user_liked
+         FROM review_comments WHERE id = $1`,
+        [commentId, userId]
+      );
+      
+      return commentResult.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  static async unlikeComment(userId, commentId) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Delete the like
+      const unlikeResult = await client.query(
+        `DELETE FROM comment_likes 
+         WHERE user_id = $1 AND comment_id = $2 
+         RETURNING *`,
+        [userId, commentId]
+      );
+      
+      // Decrement the comment like count
+      await client.query(
+        `UPDATE review_comments SET like_count = GREATEST(0, like_count - 1) WHERE id = $1`,
+        [commentId]
+      );
+      
+      await client.query('COMMIT');
+      
+      // Get updated comment with counts
+      const commentResult = await client.query(
+        `SELECT *, 
+         EXISTS(SELECT 1 FROM comment_likes WHERE comment_id = $1 AND user_id = $2) as user_liked
+         FROM review_comments WHERE id = $1`,
+        [commentId, userId]
+      );
+      
+      return commentResult.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+>>>>>>> df3f53951ecad7805d52d9e5e5ed348ca4d74471
   }
 
   static async update(commentId, commentText) {
@@ -62,11 +154,50 @@ class ReviewComment {
   }
 
   static async delete(commentId) {
+<<<<<<< HEAD
     const result = await pool.query(
       `DELETE FROM review_comments WHERE id = $1 RETURNING *`,
       [commentId],
     );
     return result.rows[0];
+=======
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Get the comment to know which review to update
+      const commentResult = await client.query(
+        `SELECT * FROM review_comments WHERE id = $1`,
+        [commentId]
+      );
+      
+      if (commentResult.rows.length === 0) {
+        throw new Error("Comment not found");
+      }
+      
+      const comment = commentResult.rows[0];
+      
+      // Delete the comment
+      const deleteResult = await client.query(
+        `DELETE FROM review_comments WHERE id = $1 RETURNING *`,
+        [commentId]
+      );
+      
+      // Decrement the review's comment count
+      await client.query(
+        `UPDATE reviews SET comment_count = GREATEST(0, comment_count - 1) WHERE id = $1`,
+        [comment.review_id]
+      );
+      
+      await client.query('COMMIT');
+      return deleteResult.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+>>>>>>> df3f53951ecad7805d52d9e5e5ed348ca4d74471
   }
 }
 
