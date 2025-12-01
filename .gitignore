@@ -40,3 +40,4 @@ recommendation-service/venv/
 __pycache__/
 
 venv/
+coverage/

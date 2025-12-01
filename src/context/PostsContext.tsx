@@ -9,6 +9,11 @@ export type Post = {
   review: string;
   tags?: string[];
   createdAt: Date;
+  reviewId?: number;
+  menuItemId?: number;
+  userName?: string;
+  likeCount?: number;
+  commentCount?: number;
 };
 
 type PostsContextType = {

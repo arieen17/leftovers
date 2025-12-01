@@ -14,6 +14,7 @@ import { Heart, MessageCircle } from "lucide-react-native";
 import { apiRequest } from "@/services/api";
 import { getAuthToken } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
+import { getReviewById } from "@/services/reviewService";
 
 interface Review {
   id: number;
@@ -59,18 +60,19 @@ export default function ReviewScreen() {
     try {
       setLoading(true);
       if (reviewId) {
-        const reviews = await apiRequest<Review[]>(
-          `/api/reviews/menu-item/${menuItemId || reviewId}`,
-        );
-        const foundReview = reviews.find((r) => r.id === Number(reviewId));
+        const reviewIdNum = Array.isArray(reviewId)
+          ? Number(reviewId[0])
+          : Number(reviewId);
+        console.log("Loading review with ID:", reviewIdNum);
+        const foundReview = await getReviewById(reviewIdNum);
         if (foundReview) {
           setReview(foundReview);
-        } else if (reviews.length > 0) {
-          setReview(reviews[0]);
+        } else {
+          console.error("Review not found:", reviewIdNum);
         }
       } else if (menuItemId) {
         const reviews = await apiRequest<Review[]>(
-          `/api/reviews/menu-item/${menuItemId}`,
+          `/api/reviews/menu-item/${menuItemId}`
         );
         if (reviews.length > 0) {
           setReview(reviews[0]);
@@ -88,7 +90,7 @@ export default function ReviewScreen() {
     try {
       setLoadingComments(true);
       const response = await apiRequest<Comment[]>(
-        `/api/reviews/${review.id}/comments`,
+        `/api/reviews/${review.id}/comments`
       );
       setComments(response || []);
     } catch (error) {
@@ -124,7 +126,7 @@ export default function ReviewScreen() {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: JSON.stringify({ comment: newComment.trim() }),
-        },
+        }
       );
 
       setNewComment("");
