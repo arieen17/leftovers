@@ -23,11 +23,8 @@ export default function RootLayout() {
     Bayon_400Regular,
   });
 
-  // Add this useEffect to fix dark mode error
   useEffect(() => {
-    // This prevents the dark mode configuration error
     if (Platform.OS === "web" && typeof document !== "undefined") {
-      // Set a default color scheme to avoid the media query issue
       document.documentElement.style.setProperty("color-scheme", "light");
     }
   }, []);
@@ -42,6 +39,10 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
           <Stack.Screen name="review" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="menu-item-reviews"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </PostsProvider>
     </AuthProvider>

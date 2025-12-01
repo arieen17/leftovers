@@ -43,8 +43,6 @@ app.use("/api/recommendations", require("./routes/recommendations"));
 
 app.use("/api/reviews", require("./routes/reviewInteractions"));
 
-app.use("/api/reviews", require("./routes/reviewInteractions"));
-
 // Maps routes
 app.use("/api/maps", require("./routes/maps"));
 

@@ -40,128 +40,126 @@ class ReviewComment {
   }
 
   static async likeComment(userId, commentId) {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    
-    // Check if already liked
-    const existingLike = await client.query(
-      `SELECT * FROM comment_likes WHERE user_id = $1 AND comment_id = $2`,
-      [userId, commentId]
-    );
-    
-    if (existingLike.rows.length > 0) {
-      await client.query('ROLLBACK');
-      return await this.unlikeComment(userId, commentId);
-    }
-    
-    // Insert the like
-    await client.query(
-      `INSERT INTO comment_likes (user_id, comment_id) VALUES ($1, $2)`,
-      [userId, commentId]
-    );
-    
-    // Increment like count
-    await client.query(
-      `UPDATE review_comments SET like_count = like_count + 1 WHERE id = $1`,
-      [commentId]
-    );
-    
-    // Get updated comment
-    const commentResult = await client.query(
-      `SELECT *, true as user_liked FROM review_comments WHERE id = $1`,
-      [commentId]
-    );
-    
-    if (commentResult.rows.length === 0) {
-      throw new Error('Comment not found');
-    }
-    
-    await client.query('COMMIT');
-    
-    return {
-      like_count: commentResult.rows[0].like_count,
-      user_liked: true
-    };
-    
-  } catch (error) {
-    await client.query('ROLLBACK');
-    
-    if (error.code === '23505') {
-      const customError = new Error('User has already liked this comment');
-      customError.code = 'ALREADY_LIKED';
-      throw customError;
-    } else if (error.code === '23503') {
-      const customError = new Error('Comment not found');
-      customError.code = 'COMMENT_NOT_FOUND';
-      throw customError;
-    }
-    
-    throw error;
-  } finally {
-    client.release();
-  }
-}
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
 
-static async unlikeComment(userId, commentId) {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    
-    // Check if like exists
-    const existingLike = await client.query(
-      `SELECT * FROM comment_likes WHERE user_id = $1 AND comment_id = $2`,
-      [userId, commentId]
-    );
-    
-    if (existingLike.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return await this.likeComment(userId, commentId);
+      // Check if already liked
+      const existingLike = await client.query(
+        `SELECT * FROM comment_likes WHERE user_id = $1 AND comment_id = $2`,
+        [userId, commentId],
+      );
+
+      if (existingLike.rows.length > 0) {
+        await client.query("ROLLBACK");
+        return await this.unlikeComment(userId, commentId);
+      }
+
+      // Insert the like
+      await client.query(
+        `INSERT INTO comment_likes (user_id, comment_id) VALUES ($1, $2)`,
+        [userId, commentId],
+      );
+
+      // Increment like count
+      await client.query(
+        `UPDATE review_comments SET like_count = like_count + 1 WHERE id = $1`,
+        [commentId],
+      );
+
+      // Get updated comment
+      const commentResult = await client.query(
+        `SELECT *, true as user_liked FROM review_comments WHERE id = $1`,
+        [commentId],
+      );
+
+      if (commentResult.rows.length === 0) {
+        throw new Error("Comment not found");
+      }
+
+      await client.query("COMMIT");
+
+      return {
+        like_count: commentResult.rows[0].like_count,
+        user_liked: true,
+      };
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      if (error.code === "23505") {
+        const customError = new Error("User has already liked this comment");
+        customError.code = "ALREADY_LIKED";
+        throw customError;
+      } else if (error.code === "23503") {
+        const customError = new Error("Comment not found");
+        customError.code = "COMMENT_NOT_FOUND";
+        throw customError;
+      }
+
+      throw error;
+    } finally {
+      client.release();
     }
-    
-    // Delete the like
-    await client.query(
-      `DELETE FROM comment_likes WHERE user_id = $1 AND comment_id = $2`,
-      [userId, commentId]
-    );
-    
-    // Decrement like count (ensure it doesn't go below 0)
-    await client.query(
-      `UPDATE review_comments SET like_count = GREATEST(0, like_count - 1) WHERE id = $1`,
-      [commentId]
-    );
-    
-    // Get updated comment
-    const commentResult = await client.query(
-      `SELECT *, false as user_liked FROM review_comments WHERE id = $1`,
-      [commentId]
-    );
-    
-    if (commentResult.rows.length === 0) {
-      throw new Error('Comment not found');
-    }
-    
-    await client.query('COMMIT');
-    
-    return {
-      like_count: commentResult.rows[0].like_count,
-      user_liked: false
-    };
-    
-  } catch (error) {
-    await client.query('ROLLBACK');
-    
-    if (error.code === '23503') {
-      const customError = new Error('Comment not found');
-      customError.code = 'COMMENT_NOT_FOUND';
-      throw customError;
-    }
-    
-    throw error;
-  } finally {
-    client.release();
   }
-}
+
+  static async unlikeComment(userId, commentId) {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      // Check if like exists
+      const existingLike = await client.query(
+        `SELECT * FROM comment_likes WHERE user_id = $1 AND comment_id = $2`,
+        [userId, commentId],
+      );
+
+      if (existingLike.rows.length === 0) {
+        await client.query("ROLLBACK");
+        return await this.likeComment(userId, commentId);
+      }
+
+      // Delete the like
+      await client.query(
+        `DELETE FROM comment_likes WHERE user_id = $1 AND comment_id = $2`,
+        [userId, commentId],
+      );
+
+      // Decrement like count (ensure it doesn't go below 0)
+      await client.query(
+        `UPDATE review_comments SET like_count = GREATEST(0, like_count - 1) WHERE id = $1`,
+        [commentId],
+      );
+
+      // Get updated comment
+      const commentResult = await client.query(
+        `SELECT *, false as user_liked FROM review_comments WHERE id = $1`,
+        [commentId],
+      );
+
+      if (commentResult.rows.length === 0) {
+        throw new Error("Comment not found");
+      }
+
+      await client.query("COMMIT");
+
+      return {
+        like_count: commentResult.rows[0].like_count,
+        user_liked: false,
+      };
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      if (error.code === "23503") {
+        const customError = new Error("Comment not found");
+        customError.code = "COMMENT_NOT_FOUND";
+        throw customError;
+      }
+
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
 
   static async update(commentId, commentText) {
     const result = await pool.query(
