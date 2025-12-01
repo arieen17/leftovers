@@ -119,8 +119,8 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
       comment: comment.trim(),
     });
 
-    // Get updated review to get the new comment count
-    const updatedReview = await Review.findByReviewId(reviewId, userId);
+    // Increment comment count in review
+    const updatedReview = await Review.incrementCommentCount(reviewId);
 
     console.log(
       `✅ User ${userId} successfully commented on review ${reviewId}`
@@ -195,13 +195,12 @@ router.post("/comments/:commentId/like", authenticate, async (req, res) => {
 
     console.log(`🔵 User ${userId} attempting to like comment ${commentId}`);
 
-    const updatedComment = await ReviewComment.likeComment(userId, commentId);
+    const like = await ReviewComment.likeComment(userId, commentId);
 
     console.log(`✅ User ${userId} successfully liked comment ${commentId}`);
     res.json({
       message: "Comment liked",
-      like_count: updatedComment.like_count,
-      user_liked: updatedComment.user_liked,
+      like,
     });
   } catch (error) {
     const userId = req.user?.userId;
@@ -247,13 +246,12 @@ router.delete("/comments/:commentId/like", authenticate, async (req, res) => {
 
     console.log(`🔵 User ${userId} attempting to unlike comment ${commentId}`);
 
-    const updatedComment = await ReviewComment.unlikeComment(userId, commentId);
+    const unlike = await ReviewComment.unlikeComment(userId, commentId);
 
     console.log(`✅ User ${userId} successfully unliked comment ${commentId}`);
     res.json({
       message: "Comment unliked",
-      like_count: updatedComment.like_count,
-      user_liked: updatedComment.user_liked,
+      unlike,
     });
   } catch (error) {
     const userId = req.user?.userId;

@@ -11,10 +11,7 @@ router.get("/test", (req, res) => {
 // POST /api/auth/signup
 router.post("/signup", signup);
 
-<<<<<<< HEAD
 // POST /api/auth/login
-=======
->>>>>>> df3f53951ecad7805d52d9e5e5ed348ca4d74471
 router.post("/login", login);
 
 router.post("/verify-ucr-email", (req, res) => {
