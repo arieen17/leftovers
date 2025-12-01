@@ -27,7 +27,7 @@ export interface CreateReviewData {
  * Create a new review
  */
 export async function createReview(
-  reviewData: CreateReviewData
+  reviewData: CreateReviewData,
 ): Promise<Review> {
   try {
     const token = getAuthToken();
@@ -77,11 +77,11 @@ export async function getReviewById(reviewId: number): Promise<Review> {
  * Get reviews for a menu item
  */
 export async function getMenuItemReviews(
-  menuItemId: number
+  menuItemId: number,
 ): Promise<Review[]> {
   try {
     const reviews = await apiRequest<Review[]>(
-      `/api/reviews/menu-item/${menuItemId}`
+      `/api/reviews/menu-item/${menuItemId}`,
     );
     return reviews;
   } catch (error) {

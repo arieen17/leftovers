@@ -47,7 +47,7 @@ export function CreateReviewForm() {
     number | null
   >(null);
   const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export function CreateReviewForm() {
         setRestaurants([]);
         Alert.alert(
           "No Restaurants Found",
-          "The database appears to be empty. Please add restaurants to the database first."
+          "The database appears to be empty. Please add restaurants to the database first.",
         );
       } else {
         setRestaurants(data);
@@ -83,7 +83,7 @@ export function CreateReviewForm() {
         error instanceof Error ? error.message : "Network request failed";
       Alert.alert(
         "Connection Error",
-        `Unable to load restaurants.\n\nError: ${errorMessage}\n\nPlease check:\n1. Backend is running on port 5000\n2. If using Expo Go, use your computer's IP instead of localhost\n3. Both devices are on the same WiFi network`
+        `Unable to load restaurants.\n\nError: ${errorMessage}\n\nPlease check:\n1. Backend is running on port 5000\n2. If using Expo Go, use your computer's IP instead of localhost\n3. Both devices are on the same WiFi network`,
       );
     } finally {
       setLoadingRestaurants(false);
@@ -105,7 +105,7 @@ export function CreateReviewForm() {
   const handleRestaurantSelect = (restaurantName: string) => {
     setRestaurant(restaurantName);
     const selectedRestaurant = restaurants.find(
-      (r) => r.name === restaurantName
+      (r) => r.name === restaurantName,
     );
     const newRestaurantId = selectedRestaurant?.id || null;
 
@@ -120,7 +120,7 @@ export function CreateReviewForm() {
   const handleMenuItemSelect = (menuItemName: string) => {
     setMenuItem(menuItemName);
     const selectedMenuItem = menuItems.find(
-      (item) => item.name === menuItemName
+      (item) => item.name === menuItemName,
     );
     setSelectedMenuItemId(selectedMenuItem?.id || null);
   };
@@ -198,7 +198,7 @@ export function CreateReviewForm() {
         "Error",
         error instanceof Error
           ? error.message
-          : "Failed to create review. Please try again."
+          : "Failed to create review. Please try again.",
       );
     } finally {
       setIsSubmitting(false);

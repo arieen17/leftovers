@@ -110,8 +110,8 @@ export default function MenuItemReviewsScreen() {
                 like_count: response.like_count,
                 user_liked: response.user_liked,
               }
-            : review
-        )
+            : review,
+        ),
       );
     } catch (error) {
       console.error("Error liking review:", error);

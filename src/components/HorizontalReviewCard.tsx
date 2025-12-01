@@ -49,7 +49,7 @@ export function HorizontalReviewCard({ post }: HorizontalReviewCardProps) {
           style: "destructive",
           onPress: () => deletePost(post.id),
         },
-      ]
+      ],
     );
   };
 

@@ -72,7 +72,7 @@ describe("LoginScreen", () => {
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         "Error",
-        "Please enter both email and password"
+        "Please enter both email and password",
       );
     });
   });
@@ -88,7 +88,7 @@ describe("LoginScreen", () => {
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         "Error",
-        "Please enter both email and password"
+        "Please enter both email and password",
       );
     });
   });
@@ -213,7 +213,7 @@ describe("LoginScreen", () => {
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         "Login Failed",
-        "Invalid email or password. Please try again."
+        "Invalid email or password. Please try again.",
       );
     });
   });
@@ -238,7 +238,7 @@ describe("LoginScreen", () => {
     (authService.login as jest.Mock).mockReturnValue(loginPromise);
 
     const { getByPlaceholderText, getByText, queryByText } = render(
-      <LoginScreen />
+      <LoginScreen />,
     );
     const emailInput = getByPlaceholderText("student@ucr.edu");
     const passwordInput = getByPlaceholderText("Password");

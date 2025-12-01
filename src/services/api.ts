@@ -7,6 +7,7 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 console.log("API_BASE_URL", API_BASE_URL);
+console.log("API_BASE_URL", API_BASE_URL);
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,
@@ -22,7 +23,7 @@ export const API_CONFIG = {
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
@@ -42,7 +43,7 @@ export async function apiRequest<T>(
       throw new Error(
         errorData.error ||
           errorData.message ||
-          `HTTP error! status: ${response.status}`
+          `HTTP error! status: ${response.status}`,
       );
     }
 

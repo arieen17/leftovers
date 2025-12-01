@@ -12,7 +12,7 @@ class Review {
         reviewData.rating,
         reviewData.comment,
         reviewData.photos,
-      ]
+      ],
     );
     return result.rows[0];
   }
@@ -53,7 +53,7 @@ class Review {
        JOIN restaurants ON menu_items.restaurant_id = restaurants.id
        WHERE user_id = $1 
        ORDER BY created_at DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
@@ -88,7 +88,7 @@ class Review {
   static async getAverageRating(menuItemId) {
     const result = await pool.query(
       "SELECT AVG(rating) as average_rating, COUNT(*) as review_count FROM reviews WHERE menu_item_id = $1",
-      [menuItemId]
+      [menuItemId],
     );
     return result.rows[0];
   }
@@ -102,7 +102,7 @@ class Review {
       // First check if already liked
       const existingLike = await client.query(
         `SELECT * FROM review_likes WHERE user_id = $1 AND review_id = $2`,
-        [userId, reviewId]
+        [userId, reviewId],
       );
 
       if (existingLike.rows.length > 0) {
@@ -114,13 +114,13 @@ class Review {
       // Insert the like
       await client.query(
         `INSERT INTO review_likes (user_id, review_id) VALUES ($1, $2)`,
-        [userId, reviewId]
+        [userId, reviewId],
       );
 
       // Get updated counts
       const likeCountResult = await client.query(
         `SELECT COUNT(*) as like_count FROM review_likes WHERE review_id = $1`,
-        [reviewId]
+        [reviewId],
       );
 
       await client.query("COMMIT");
@@ -159,7 +159,7 @@ class Review {
       // First check if like exists
       const existingLike = await client.query(
         `SELECT * FROM review_likes WHERE user_id = $1 AND review_id = $2`,
-        [userId, reviewId]
+        [userId, reviewId],
       );
 
       if (existingLike.rows.length === 0) {
@@ -171,13 +171,13 @@ class Review {
       // Delete the like
       const deleteResult = await client.query(
         `DELETE FROM review_likes WHERE user_id = $1 AND review_id = $2 RETURNING *`,
-        [userId, reviewId]
+        [userId, reviewId],
       );
 
       // Get updated counts
       const likeCountResult = await client.query(
         `SELECT COUNT(*) as like_count FROM review_likes WHERE review_id = $1`,
-        [reviewId]
+        [reviewId],
       );
 
       await client.query("COMMIT");
@@ -206,7 +206,7 @@ class Review {
   static async incrementCommentCount(reviewId) {
     const result = await pool.query(
       `UPDATE reviews SET comment_count = comment_count + 1 WHERE id = $1 RETURNING *`,
-      [reviewId]
+      [reviewId],
     );
     return result.rows[0];
   }

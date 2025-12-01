@@ -160,64 +160,64 @@ export default function DiscoverScreen() {
   };
 
   const handleLikeReview = async (reviewId: number, menuItemId: number) => {
-  if (!isAuthenticated) return;
+    if (!isAuthenticated) return;
 
-  try {
-    const token = getAuthToken();
-    if (!token) return;
+    try {
+      const token = getAuthToken();
+      if (!token) return;
 
-    // Check current state to decide whether to like or unlike
-    const currentReview = reviews[menuItemId]?.find(r => r.id === reviewId);
-    const isCurrentlyLiked = currentReview?.user_liked || false;
-    
-    const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-    
-    await apiRequest<{
-      message: string;
-      like_count: number;
-      user_liked: boolean;
-    }>(`/api/reviews/${reviewId}/like`, {
-      method,
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      // Check current state to decide whether to like or unlike
+      const currentReview = reviews[menuItemId]?.find((r) => r.id === reviewId);
+      const isCurrentlyLiked = currentReview?.user_liked || false;
 
-    // Simply reload the reviews for this item
-    await loadReviewsForItem(menuItemId);
-    
-  } catch (error) {
-    console.error("Error liking/unliking review:", error);
-  }
-};
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
 
-const handleLikeComment = async (commentId: number, reviewId: number) => {
-  if (!isAuthenticated) return;
+      await apiRequest<{
+        message: string;
+        like_count: number;
+        user_liked: boolean;
+      }>(`/api/reviews/${reviewId}/like`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  try {
-    const token = getAuthToken();
-    if (!token) return;
+      // Simply reload the reviews for this item
+      await loadReviewsForItem(menuItemId);
+    } catch (error) {
+      console.error("Error liking/unliking review:", error);
+    }
+  };
 
-    // Check current state
-    const currentComment = comments[reviewId]?.find(c => c.id === commentId);
-    const isCurrentlyLiked = currentComment?.user_liked || false;
-    
-    const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-    
-    await apiRequest<{
-      message: string;
-      like_count: number;
-      user_liked: boolean;
-    }>(`/api/reviews/comments/${commentId}/like`, {
-      method,
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const handleLikeComment = async (commentId: number, reviewId: number) => {
+    if (!isAuthenticated) return;
 
-    // Simply reload the comments for this review
-    await loadCommentsForReview(reviewId);
-    
-  } catch (error) {
-    console.error("Error liking/unliking comment:", error);
-  }
-};
+    try {
+      const token = getAuthToken();
+      if (!token) return;
+
+      // Check current state
+      const currentComment = comments[reviewId]?.find(
+        (c) => c.id === commentId,
+      );
+      const isCurrentlyLiked = currentComment?.user_liked || false;
+
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+
+      await apiRequest<{
+        message: string;
+        like_count: number;
+        user_liked: boolean;
+      }>(`/api/reviews/comments/${commentId}/like`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Simply reload the comments for this review
+      await loadCommentsForReview(reviewId);
+    } catch (error) {
+      console.error("Error liking/unliking comment:", error);
+    }
+  };
 
   const handleAddComment = async (reviewId: number, menuItemId: number) => {
     if (!isAuthenticated || !newComments[reviewId]?.trim()) return;
