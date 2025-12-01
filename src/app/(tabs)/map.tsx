@@ -59,7 +59,7 @@ export default function MapScreen() {
   });
 
   const cuisineTypes = Array.from(
-    new Set(restaurants.map((r) => r.cuisine_type).filter(Boolean)),
+    new Set(restaurants.map((r) => r.cuisine_type).filter(Boolean))
   ).sort();
 
   const defaultCenter = { latitude: 33.9745, longitude: -117.3281 };
@@ -135,7 +135,7 @@ export default function MapScreen() {
             distanceText,
             average_rating: restaurant.average_rating ?? null,
           };
-        },
+        }
       );
 
       setRestaurants(restaurantsWithDistance);
@@ -156,7 +156,7 @@ export default function MapScreen() {
 
     if (filters.maxDistance !== null && userLocation) {
       filtered = filtered.filter(
-        (r) => r.distance !== undefined && r.distance <= filters.maxDistance!,
+        (r) => r.distance !== undefined && r.distance <= filters.maxDistance!
       );
     }
 
@@ -402,7 +402,7 @@ export default function MapScreen() {
 
               <View className="mb-4">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">
-                  Max Distance{" "}
+                  Max Distance
                   {filters.maxDistance ? `(${filters.maxDistance} mi)` : ""}
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -434,7 +434,7 @@ export default function MapScreen() {
 
               <View className="mb-4">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">
-                  Min Rating{" "}
+                  Min Rating
                   {filters.minRating ? `(${filters.minRating}+ ⭐)` : ""}
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -479,7 +479,7 @@ export default function MapScreen() {
         )}
       </View>
 
-      <View className="h-1/4 bg-white border-t border-gray-200">
+      <View className="h-1/4 bg-white border-t border-gray-200 pb-2">
         <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
           <Text className="text-lg font-bold text-gray-900">
             Restaurants ({filteredRestaurants.length})
@@ -492,13 +492,13 @@ export default function MapScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           className="flex-1"
-          contentContainerStyle={{ paddingVertical: 6 }}
+          contentContainerStyle={{ paddingVertical: 6, paddingHorizontal: 8 }}
         >
           {filteredRestaurants.map((restaurant) => (
             <TouchableOpacity
               key={restaurant.id}
               onPress={() => handleRestaurantPress(restaurant)}
-              className={`w-1/6 bg-white rounded-lg p-2 m-2 border-2 shadow-sm ${
+              className={`w-80 bg-white rounded-lg p-3 mx-2 border-2 shadow-sm ${
                 selectedRestaurant?.id === restaurant.id
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-200"
@@ -591,7 +591,7 @@ export default function MapScreen() {
                           <Star size={20} color="#f59e0b" fill="#f59e0b" />
                           <Text className="text-lg font-bold text-gray-900 ml-2">
                             {parseFloat(
-                              restaurantDetails.average_rating,
+                              restaurantDetails.average_rating
                             ).toFixed(1)}
                           </Text>
                         </View>
@@ -647,7 +647,7 @@ export default function MapScreen() {
                               {hours}
                             </Text>
                           </View>
-                        ),
+                        )
                       )}
                     </View>
                   )}
