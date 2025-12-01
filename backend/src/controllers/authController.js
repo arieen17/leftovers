@@ -50,7 +50,6 @@ const login = async (req, res) => {
 
     const user = await User.findByEmail(email);
     console.log("📋 User found:", user ? `Yes (id: ${user.id})` : "No");
-    console.log("🔑 User password hash:", user?.password);
 
     if (!user) {
       return res.status(400).json({ error: "Invalid email or password" });

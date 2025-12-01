@@ -9,6 +9,13 @@ class User {
     return result.rows[0];
   }
 
+  static async findById(userId) {
+    const result = await pool.query("SELECT * FROM users WHERE id = $1", [
+      userId,
+    ]);
+    return result.rows[0];
+  }
+
   static async create(userData) {
     const result = await pool.query(
       `INSERT INTO users (email, password, name, birthday, phone_number, address) 
@@ -48,7 +55,7 @@ class User {
     }
 
     values.push(userId);
-    
+
     const query = `
       UPDATE users 
       SET ${fields.join(", ")} 

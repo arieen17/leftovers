@@ -58,21 +58,20 @@ export const clearAuth = () => {
 /**
  * User login
  */
-export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
+export async function login(
+  credentials: LoginCredentials,
+): Promise<AuthResponse> {
   try {
-    const response = await apiRequest<AuthResponse>(
-      "/api/auth/login",
-      {
-        method: "POST",
-        body: JSON.stringify(credentials),
-      }
-    );
-    
+    const response = await apiRequest<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+
     if (response.token && response.user) {
       setAuthToken(response.token);
       setCurrentUser(response.user);
     }
-    
+
     return response;
   } catch (error) {
     console.error("Login error:", error);
@@ -83,24 +82,37 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
 /**
  * User signup
  */
-export async function signup(credentials: SignupCredentials): Promise<AuthResponse> {
+export async function signup(
+  credentials: SignupCredentials,
+): Promise<AuthResponse> {
   try {
-    const response = await apiRequest<AuthResponse>(
-      "/api/auth/signup",
-      {
-        method: "POST",
-        body: JSON.stringify(credentials),
-      }
-    );
-    
+    const response = await apiRequest<AuthResponse>("/api/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+
     if (response.token && response.user) {
       setAuthToken(response.token);
       setCurrentUser(response.user);
     }
-    
+
     return response;
   } catch (error) {
     console.error("Signup error:", error);
     throw error;
   }
+}
+
+export interface UpdateUserProfileData {
+  name: string;
+  birthday?: string;
+  phone_number?: string;
+  address?: string;
+}
+export async function updateUserProfile(
+  userId: number,
+  profileData: UpdateUserProfileData,
+): Promise<User> {
+  // TODO: Future implementation
+  throw new Error("Profile editing is not yet implemented");
 }

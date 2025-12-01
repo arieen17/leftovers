@@ -1,16 +1,22 @@
-import { View, TextInput, Text, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useState } from "react";
 import BearIcon from "../../public/images/bear.svg";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { login, type LoginCredentials } from "@/services/authService";
 
-
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
   const { login: authLogin } = useAuth();
 
@@ -24,18 +30,17 @@ export default function LoginScreen() {
       setLoading(true);
       const credentials: LoginCredentials = { email, password };
       const response = await login(credentials);
-      
+
       // Update auth context with user data
       authLogin(response.user);
-      
-      // Navigate to main app (existing functionality)
+
+      // Navigate to main app
       router.replace("(tabs)");
-      
     } catch (error: any) {
       console.error("Login error:", error);
       Alert.alert(
-        "Login Failed", 
-        error.message || "Invalid email or password. Please try again."
+        "Login Failed",
+        error.message || "Invalid email or password. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -106,7 +111,7 @@ export default function LoginScreen() {
             <View className="flex-1 h-px bg-gray-500" />
           </View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             className="w-full h-12 bg-white rounded-full justify-center items-center shadow-sm"
             onPress={navigateToSignup}
           >

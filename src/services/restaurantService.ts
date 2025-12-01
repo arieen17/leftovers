@@ -35,7 +35,7 @@ export interface MenuItem {
 export async function fetchRestaurants(): Promise<Restaurant[]> {
   try {
     const restaurants = await apiRequest<Restaurant[]>(
-      API_CONFIG.ENDPOINTS.RESTAURANTS
+      API_CONFIG.ENDPOINTS.RESTAURANTS,
     );
     // Ensure restaurants have rating fields (may be undefined if not provided)
     return restaurants.map((restaurant) => ({
@@ -55,7 +55,7 @@ export async function fetchRestaurants(): Promise<Restaurant[]> {
 export async function fetchRestaurantById(id: number): Promise<Restaurant> {
   try {
     const restaurant = await apiRequest<Restaurant>(
-      `${API_CONFIG.ENDPOINTS.RESTAURANTS}/${id}`
+      `${API_CONFIG.ENDPOINTS.RESTAURANTS}/${id}`,
     );
     return restaurant;
   } catch (error) {
@@ -68,11 +68,11 @@ export async function fetchRestaurantById(id: number): Promise<Restaurant> {
  * Fetch menu items for a specific restaurant
  */
 export async function fetchRestaurantMenu(
-  restaurantId: number
+  restaurantId: number,
 ): Promise<MenuItem[]> {
   try {
     const menuItems = await apiRequest<MenuItem[]>(
-      API_CONFIG.ENDPOINTS.RESTAURANT_MENU(restaurantId)
+      API_CONFIG.ENDPOINTS.RESTAURANT_MENU(restaurantId),
     );
     return menuItems;
   } catch (error) {
@@ -87,7 +87,7 @@ export async function fetchRestaurantMenu(
 export async function fetchMenuItemById(id: number): Promise<MenuItem> {
   try {
     const menuItem = await apiRequest<MenuItem>(
-      API_CONFIG.ENDPOINTS.MENU_ITEM(id)
+      API_CONFIG.ENDPOINTS.MENU_ITEM(id),
     );
     return menuItem;
   } catch (error) {
@@ -105,11 +105,11 @@ export interface SearchResults {
 }
 
 export async function searchRestaurantsAndItems(
-  query: string
+  query: string,
 ): Promise<SearchResults> {
   try {
     const results = await apiRequest<SearchResults>(
-      `${API_CONFIG.ENDPOINTS.RESTAURANTS}/search?q=${encodeURIComponent(query)}`
+      `${API_CONFIG.ENDPOINTS.RESTAURANTS}/search?q=${encodeURIComponent(query)}`,
     );
     return results;
   } catch (error) {
@@ -124,7 +124,7 @@ export async function searchRestaurantsAndItems(
 export async function checkBackendHealth(): Promise<boolean> {
   try {
     const response = await apiRequest<{ status: string; timestamp: string }>(
-      API_CONFIG.ENDPOINTS.HEALTH
+      API_CONFIG.ENDPOINTS.HEALTH,
     );
     return response.status.includes("✅");
   } catch (error) {

@@ -22,14 +22,11 @@ export interface Review {
 export async function getUserReviews(userId: number): Promise<Review[]> {
   try {
     const token = getAuthToken();
-    const reviews = await apiRequest<Review[]>(
-      `/api/reviews/user/${userId}`,
-      {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      }
-    );
+    const reviews = await apiRequest<Review[]>(`/api/reviews/user/${userId}`, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
     return reviews;
   } catch (error) {
     console.error("Error fetching user reviews:", error);

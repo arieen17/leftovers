@@ -1,4 +1,4 @@
-const { getRecommendations } = require('../algorithms/recommendations');
+const { getRecommendations } = require("../algorithms/recommendations");
 
 const getUserRecommendations = async (req, res) => {
   try {
@@ -6,7 +6,7 @@ const getUserRecommendations = async (req, res) => {
     const recommendations = await getRecommendations(userId);
     res.json({ user_id: userId, recommendations });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get recommendations' });
+    res.status(500).json({ error: "Failed to get recommendations" });
   }
 };
 

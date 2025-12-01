@@ -50,8 +50,8 @@ class Review {
     return result.rows[0];
   }
   static async getReviewWithLikesAndComments(reviewId) {
-  const result = await pool.query(
-    `SELECT 
+    const result = await pool.query(
+      `SELECT 
       r.*,
       u.name as user_name,
       u.tier as user_tier,
@@ -64,30 +64,30 @@ class Review {
     LEFT JOIN review_comments rc ON r.id = rc.review_id
     WHERE r.id = $1
     GROUP BY r.id, u.name, u.tier`,
-    [reviewId, userId] // userId for checking if current user liked it
-  );
-  return result.rows[0];
-}
+      [reviewId, userId], // userId for checking if current user liked it
+    );
+    return result.rows[0];
+  }
 
-static async likeReview(userId, reviewId) {
-  const result = await pool.query(
-    `INSERT INTO review_likes (user_id, review_id) 
+  static async likeReview(userId, reviewId) {
+    const result = await pool.query(
+      `INSERT INTO review_likes (user_id, review_id) 
      VALUES ($1, $2) 
      RETURNING *`,
-    [userId, reviewId]
-  );
-  return result.rows[0];
-}
+      [userId, reviewId],
+    );
+    return result.rows[0];
+  }
 
-static async unlikeReview(userId, reviewId) {
-  const result = await pool.query(
-    `DELETE FROM review_likes 
+  static async unlikeReview(userId, reviewId) {
+    const result = await pool.query(
+      `DELETE FROM review_likes 
      WHERE user_id = $1 AND review_id = $2 
      RETURNING *`,
-    [userId, reviewId]
-  );
-  return result.rows[0];
-}
+      [userId, reviewId],
+    );
+    return result.rows[0];
+  }
 }
 
 module.exports = Review;

@@ -38,3 +38,5 @@ yarn-error.*
 recommendation-service/venv/
 *.pyc
 __pycache__/
+
+venv/

@@ -18,7 +18,10 @@ router.post("/:reviewId/like", authenticate, async (req, res) => {
 // Unlike a review
 router.delete("/:reviewId/like", authenticate, async (req, res) => {
   try {
-    const unlike = await Review.unlikeReview(req.user.userId, req.params.reviewId);
+    const unlike = await Review.unlikeReview(
+      req.user.userId,
+      req.params.reviewId,
+    );
     res.json({ message: "Review unliked", unlike });
   } catch (error) {
     res.status(500).json({ error: "Failed to unlike review" });
@@ -31,7 +34,7 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
     const comment = await ReviewComment.create({
       user_id: req.user.userId,
       review_id: req.params.reviewId,
-      comment: req.body.comment
+      comment: req.body.comment,
     });
     res.status(201).json(comment);
   } catch (error) {
@@ -42,7 +45,10 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
 // Get comments for a review
 router.get("/:reviewId/comments", async (req, res) => {
   try {
-    const comments = await ReviewComment.getByReviewId(req.params.reviewId, req.user?.userId);
+    const comments = await ReviewComment.getByReviewId(
+      req.params.reviewId,
+      req.user?.userId,
+    );
     res.json(comments);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comments" });
@@ -52,7 +58,10 @@ router.get("/:reviewId/comments", async (req, res) => {
 // Like a comment
 router.post("/comments/:commentId/like", authenticate, async (req, res) => {
   try {
-    const like = await ReviewComment.likeComment(req.user.userId, req.params.commentId);
+    const like = await ReviewComment.likeComment(
+      req.user.userId,
+      req.params.commentId,
+    );
     res.json({ message: "Comment liked", like });
   } catch (error) {
     res.status(500).json({ error: "Failed to like comment" });
@@ -62,7 +71,10 @@ router.post("/comments/:commentId/like", authenticate, async (req, res) => {
 // Unlike a comment
 router.delete("/comments/:commentId/like", authenticate, async (req, res) => {
   try {
-    const unlike = await ReviewComment.unlikeComment(req.user.userId, req.params.commentId);
+    const unlike = await ReviewComment.unlikeComment(
+      req.user.userId,
+      req.params.commentId,
+    );
     res.json({ message: "Comment unliked", unlike });
   } catch (error) {
     res.status(500).json({ error: "Failed to unlike comment" });

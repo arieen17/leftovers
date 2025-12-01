@@ -7,6 +7,7 @@ type FormFieldProps = {
   placeholder: string;
   onChangeText: (text: string) => void;
   onPress?: () => void;
+  editable?: boolean;
 };
 
 export function FormField({
@@ -15,6 +16,7 @@ export function FormField({
   placeholder,
   onChangeText,
   onPress,
+  editable = true,
 }: FormFieldProps) {
   return (
     <View className="mb-6">
@@ -29,6 +31,7 @@ export function FormField({
           placeholderTextColor="#9CA3AF"
           className="flex-1 text-base text-gray-900"
           onFocus={onPress}
+          editable={editable}
         />
         <ChevronRight size={20} color="#6B7280" />
       </View>

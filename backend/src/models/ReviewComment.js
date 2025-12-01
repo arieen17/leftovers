@@ -6,7 +6,7 @@ class ReviewComment {
       `INSERT INTO review_comments (user_id, review_id, comment) 
        VALUES ($1, $2, $3) 
        RETURNING *`,
-      [commentData.user_id, commentData.review_id, commentData.comment]
+      [commentData.user_id, commentData.review_id, commentData.comment],
     );
     return result.rows[0];
   }
@@ -25,7 +25,7 @@ class ReviewComment {
       WHERE rc.review_id = $1
       GROUP BY rc.id, u.name, u.tier
       ORDER BY rc.created_at ASC`,
-      [reviewId, userId] // userId for checking if current user liked comment
+      [reviewId, userId], // userId for checking if current user liked comment
     );
     return result.rows;
   }
@@ -35,7 +35,7 @@ class ReviewComment {
       `INSERT INTO comment_likes (user_id, comment_id) 
        VALUES ($1, $2) 
        RETURNING *`,
-      [userId, commentId]
+      [userId, commentId],
     );
     return result.rows[0];
   }
@@ -45,7 +45,7 @@ class ReviewComment {
       `DELETE FROM comment_likes 
        WHERE user_id = $1 AND comment_id = $2 
        RETURNING *`,
-      [userId, commentId]
+      [userId, commentId],
     );
     return result.rows[0];
   }
@@ -56,7 +56,7 @@ class ReviewComment {
        SET comment = $1, updated_at = CURRENT_TIMESTAMP 
        WHERE id = $2 
        RETURNING *`,
-      [commentText, commentId]
+      [commentText, commentId],
     );
     return result.rows[0];
   }
@@ -64,7 +64,7 @@ class ReviewComment {
   static async delete(commentId) {
     const result = await pool.query(
       `DELETE FROM review_comments WHERE id = $1 RETURNING *`,
-      [commentId]
+      [commentId],
     );
     return result.rows[0];
   }
