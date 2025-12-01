@@ -1,10 +1,7 @@
 const getApiBaseUrl = () => {
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname === "localhost"
-  ) {
-    return "http://localhost:5000";
-  }
+  console.log("EXPO_PUBLIC_API_URL:", process.env.EXPO_PUBLIC_API_URL);
+  console.log("All env:", process.env);
+  
   return process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
 };
 
