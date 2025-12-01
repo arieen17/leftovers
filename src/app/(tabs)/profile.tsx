@@ -8,6 +8,12 @@ import { AppText } from "@/components/AppText";
 import { useAuth } from "@/context/AuthContext";
 import { getUserReviews, type Review } from "@/services/userService";
 
+import BearCritic from "../../../public/tiers/bearCritic.svg";
+import FeastFinder from "../../../public/tiers/feastFinder.svg";
+import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
+import TrailblazingTaster from "../../../public/tiers/trailblazingTaster.svg";
+import HoneyConnoisseur from "../../../public/tiers/honeyConnoisseur.svg";
+
 export default function ProfileScreen() {
   const [isReview, setIsReview] = useState(true);
   const [isBadge, setIsBadge] = useState(false);
@@ -147,6 +153,11 @@ export default function ProfileScreen() {
               <Text className="text-white font-bold text-lg ml-2">
                 {user.tier} Food Explorer
               </Text>
+              <BearCritic/>
+              <FeastFinder/>
+              <YoungGrubber/>
+              <TrailblazingTaster/>
+              <HoneyConnoisseur/>
             </View>
             <View className="h-3 bg-white/30 rounded-full overflow-hidden">
               <View
