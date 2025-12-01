@@ -6,7 +6,7 @@ class ReviewComment {
       `INSERT INTO review_comments (user_id, review_id, comment) 
        VALUES ($1, $2, $3) 
        RETURNING *`,
-      [commentData.user_id, commentData.review_id, commentData.comment]
+      [commentData.user_id, commentData.review_id, commentData.comment],
     );
     return result.rows[0];
   }
@@ -49,13 +49,13 @@ class ReviewComment {
         `INSERT INTO comment_likes (user_id, comment_id) 
          VALUES ($1, $2) 
          RETURNING *`,
-        [userId, commentId]
+        [userId, commentId],
       );
 
       // Increment the comment like count
       await client.query(
         `UPDATE review_comments SET like_count = like_count + 1 WHERE id = $1`,
-        [commentId]
+        [commentId],
       );
 
       await client.query("COMMIT");
@@ -65,7 +65,7 @@ class ReviewComment {
         `SELECT *, 
          EXISTS(SELECT 1 FROM comment_likes WHERE comment_id = $1 AND user_id = $2) as user_liked
          FROM review_comments WHERE id = $1`,
-        [commentId, userId]
+        [commentId, userId],
       );
 
       return commentResult.rows[0];
@@ -87,13 +87,13 @@ class ReviewComment {
         `DELETE FROM comment_likes 
          WHERE user_id = $1 AND comment_id = $2 
          RETURNING *`,
-        [userId, commentId]
+        [userId, commentId],
       );
 
       // Decrement the comment like count
       await client.query(
         `UPDATE review_comments SET like_count = GREATEST(0, like_count - 1) WHERE id = $1`,
-        [commentId]
+        [commentId],
       );
 
       await client.query("COMMIT");
@@ -103,7 +103,7 @@ class ReviewComment {
         `SELECT *, 
          EXISTS(SELECT 1 FROM comment_likes WHERE comment_id = $1 AND user_id = $2) as user_liked
          FROM review_comments WHERE id = $1`,
-        [commentId, userId]
+        [commentId, userId],
       );
 
       return commentResult.rows[0];
@@ -121,7 +121,7 @@ class ReviewComment {
        SET comment = $1, updated_at = CURRENT_TIMESTAMP 
        WHERE id = $2 
        RETURNING *`,
-      [commentText, commentId]
+      [commentText, commentId],
     );
     return result.rows[0];
   }
@@ -134,7 +134,7 @@ class ReviewComment {
       // Get the comment to know which review to update
       const commentResult = await client.query(
         `SELECT * FROM review_comments WHERE id = $1`,
-        [commentId]
+        [commentId],
       );
 
       if (commentResult.rows.length === 0) {
@@ -146,13 +146,13 @@ class ReviewComment {
       // Delete the comment
       const deleteResult = await client.query(
         `DELETE FROM review_comments WHERE id = $1 RETURNING *`,
-        [commentId]
+        [commentId],
       );
 
       // Decrement the review's comment count
       await client.query(
         `UPDATE reviews SET comment_count = GREATEST(0, comment_count - 1) WHERE id = $1`,
-        [comment.review_id]
+        [comment.review_id],
       );
 
       await client.query("COMMIT");

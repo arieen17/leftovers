@@ -14,12 +14,12 @@ const updateUser = async (req, res) => {
       name,
       email,
       birthday: birthday || null,
-      phone_number: phone_number || null, 
-      address: address || null
+      phone_number: phone_number || null,
+      address: address || null,
     };
 
     const updatedUser = await User.update(userId, updateData);
-    
+
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -32,5 +32,5 @@ const updateUser = async (req, res) => {
 };
 
 module.exports = {
-  updateUser
+  updateUser,
 };

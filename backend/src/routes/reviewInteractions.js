@@ -31,7 +31,7 @@ router.post("/:reviewId/like", authenticate, async (req, res) => {
 
     console.error(
       `❌ Like review error for user ${userId || "unknown"}, review ${reviewId}:`,
-      error
+      error,
     );
 
     // Handle specific PostgreSQL errors
@@ -83,7 +83,7 @@ router.delete("/:reviewId/like", authenticate, async (req, res) => {
 
     console.error(
       `❌ Unlike review error for user ${userId || "unknown"}, review ${reviewId}:`,
-      error
+      error,
     );
     res.status(500).json({
       error: "Failed to unlike review",
@@ -104,7 +104,7 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
     }
 
     console.log(
-      `🔵 User ${userId} attempting to comment on review ${reviewId}`
+      `🔵 User ${userId} attempting to comment on review ${reviewId}`,
     );
 
     const { comment } = req.body;
@@ -123,7 +123,7 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
     const updatedReview = await Review.incrementCommentCount(reviewId);
 
     console.log(
-      `✅ User ${userId} successfully commented on review ${reviewId}`
+      `✅ User ${userId} successfully commented on review ${reviewId}`,
     );
     res.status(201).json({
       ...commentData,
@@ -135,7 +135,7 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
 
     console.error(
       `❌ Add comment error for user ${userId || "unknown"}, review ${reviewId}:`,
-      error
+      error,
     );
 
     // Handle specific PostgreSQL errors
@@ -162,13 +162,13 @@ router.get("/:reviewId/comments", async (req, res) => {
     const reviewId = req.params.reviewId;
 
     console.log(
-      `🔵 Fetching comments for review ${reviewId}, user: ${userId || "not authenticated"}`
+      `🔵 Fetching comments for review ${reviewId}, user: ${userId || "not authenticated"}`,
     );
 
     const comments = await ReviewComment.getByReviewId(reviewId, userId);
 
     console.log(
-      `✅ Successfully fetched ${comments.length} comments for review ${reviewId}`
+      `✅ Successfully fetched ${comments.length} comments for review ${reviewId}`,
     );
     res.json(comments);
   } catch (error) {
@@ -208,7 +208,7 @@ router.post("/comments/:commentId/like", authenticate, async (req, res) => {
 
     console.error(
       `❌ Like comment error for user ${userId || "unknown"}, comment ${commentId}:`,
-      error
+      error,
     );
 
     // Handle specific PostgreSQL errors
@@ -259,7 +259,7 @@ router.delete("/comments/:commentId/like", authenticate, async (req, res) => {
 
     console.error(
       `❌ Unlike comment error for user ${userId || "unknown"}, comment ${commentId}:`,
-      error
+      error,
     );
     res.status(500).json({
       error: "Failed to unlike comment",

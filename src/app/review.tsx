@@ -60,7 +60,7 @@ export default function ReviewScreen() {
       setLoading(true);
       if (reviewId) {
         const reviews = await apiRequest<Review[]>(
-          `/api/reviews/menu-item/${menuItemId || reviewId}`
+          `/api/reviews/menu-item/${menuItemId || reviewId}`,
         );
         const foundReview = reviews.find((r) => r.id === Number(reviewId));
         if (foundReview) {
@@ -70,7 +70,7 @@ export default function ReviewScreen() {
         }
       } else if (menuItemId) {
         const reviews = await apiRequest<Review[]>(
-          `/api/reviews/menu-item/${menuItemId}`
+          `/api/reviews/menu-item/${menuItemId}`,
         );
         if (reviews.length > 0) {
           setReview(reviews[0]);
@@ -88,7 +88,7 @@ export default function ReviewScreen() {
     try {
       setLoadingComments(true);
       const response = await apiRequest<Comment[]>(
-        `/api/reviews/${review.id}/comments`
+        `/api/reviews/${review.id}/comments`,
       );
       setComments(response || []);
     } catch (error) {
@@ -124,7 +124,7 @@ export default function ReviewScreen() {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: JSON.stringify({ comment: newComment.trim() }),
-        }
+        },
       );
 
       setNewComment("");

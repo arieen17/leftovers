@@ -12,7 +12,7 @@ class Review {
         reviewData.rating,
         reviewData.comment,
         reviewData.photos,
-      ]
+      ],
     );
     return result.rows[0];
   }
@@ -53,7 +53,7 @@ class Review {
        JOIN restaurants ON menu_items.restaurant_id = restaurants.id
        WHERE user_id = $1 
        ORDER BY created_at DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
@@ -61,7 +61,7 @@ class Review {
   static async getAverageRating(menuItemId) {
     const result = await pool.query(
       "SELECT AVG(rating) as average_rating, COUNT(*) as review_count FROM reviews WHERE menu_item_id = $1",
-      [menuItemId]
+      [menuItemId],
     );
     return result.rows[0];
   }
@@ -77,13 +77,13 @@ class Review {
         `INSERT INTO review_likes (user_id, review_id) 
          VALUES ($1, $2) 
          RETURNING *`,
-        [userId, reviewId]
+        [userId, reviewId],
       );
 
       // Increment the like count
       await client.query(
         `UPDATE reviews SET like_count = like_count + 1 WHERE id = $1`,
-        [reviewId]
+        [reviewId],
       );
 
       await client.query("COMMIT");
@@ -93,7 +93,7 @@ class Review {
         `SELECT *, 
          EXISTS(SELECT 1 FROM review_likes WHERE review_id = $1 AND user_id = $2) as user_liked
          FROM reviews WHERE id = $1`,
-        [reviewId, userId]
+        [reviewId, userId],
       );
 
       return reviewResult.rows[0];
@@ -115,13 +115,13 @@ class Review {
         `DELETE FROM review_likes 
          WHERE user_id = $1 AND review_id = $2 
          RETURNING *`,
-        [userId, reviewId]
+        [userId, reviewId],
       );
 
       // Decrement the like count
       await client.query(
         `UPDATE reviews SET like_count = GREATEST(0, like_count - 1) WHERE id = $1`,
-        [reviewId]
+        [reviewId],
       );
 
       await client.query("COMMIT");
@@ -131,7 +131,7 @@ class Review {
         `SELECT *, 
          EXISTS(SELECT 1 FROM review_likes WHERE review_id = $1 AND user_id = $2) as user_liked
          FROM reviews WHERE id = $1`,
-        [reviewId, userId]
+        [reviewId, userId],
       );
 
       return reviewResult.rows[0];
@@ -146,7 +146,7 @@ class Review {
   static async incrementCommentCount(reviewId) {
     const result = await pool.query(
       `UPDATE reviews SET comment_count = comment_count + 1 WHERE id = $1 RETURNING *`,
-      [reviewId]
+      [reviewId],
     );
     return result.rows[0];
   }

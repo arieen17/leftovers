@@ -135,7 +135,7 @@ export default function DiscoverScreen() {
     try {
       setLoadingReviews((prev) => ({ ...prev, [menuItemId]: true }));
       const response = await apiRequest<Review[]>(
-        `/api/reviews/menu-item/${menuItemId}`
+        `/api/reviews/menu-item/${menuItemId}`,
       );
       setReviews((prev) => ({ ...prev, [menuItemId]: response }));
     } catch (error) {
@@ -149,7 +149,7 @@ export default function DiscoverScreen() {
     try {
       setLoadingComments((prev) => ({ ...prev, [reviewId]: true }));
       const response = await apiRequest<Comment[]>(
-        `/api/reviews/${reviewId}/comments`
+        `/api/reviews/${reviewId}/comments`,
       );
       setComments((prev) => ({ ...prev, [reviewId]: response }));
     } catch (error) {
@@ -186,7 +186,7 @@ export default function DiscoverScreen() {
                   like_count: response.like_count,
                   user_liked: response.user_liked,
                 }
-              : review
+              : review,
           ) || [],
       }));
     } catch (error) {
@@ -221,7 +221,7 @@ export default function DiscoverScreen() {
                   like_count: response.like_count,
                   user_liked: response.user_liked,
                 }
-              : comment
+              : comment,
           ) || [],
       }));
     } catch (error) {
@@ -242,7 +242,7 @@ export default function DiscoverScreen() {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: JSON.stringify({ comment: newComments[reviewId] }),
-        }
+        },
       );
 
       setNewComments((prev) => ({ ...prev, [reviewId]: "" }));
@@ -260,7 +260,7 @@ export default function DiscoverScreen() {
           prev[menuItemId]?.map((review) =>
             review.id === reviewId
               ? { ...review, comment_count: response.comment_count }
-              : review
+              : review,
           ) || [],
       }));
     } catch (error) {
@@ -374,7 +374,7 @@ export default function DiscoverScreen() {
                               >
                                 {star <= review.rating ? "★" : "☆"}
                               </Text>
-                            )
+                            ),
                           )}
                         </View>
                       </View>
@@ -471,7 +471,7 @@ export default function DiscoverScreen() {
                                 </TouchableOpacity>
                                 <AppText size="small" className="text-gray-500">
                                   {new Date(
-                                    comment.created_at
+                                    comment.created_at,
                                   ).toLocaleDateString()}
                                 </AppText>
                               </View>
