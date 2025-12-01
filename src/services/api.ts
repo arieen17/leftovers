@@ -1,14 +1,9 @@
 const getApiBaseUrl = () => {
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname === "localhost"
-  ) {
-    return "http://localhost:5000";
-  }
-  return process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
+  return process.env.EXPO_PUBLIC_API_URL;
 };
 
 const API_BASE_URL = getApiBaseUrl();
+console.log("API Base URL:", API_BASE_URL);
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,

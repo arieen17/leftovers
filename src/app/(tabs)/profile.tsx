@@ -15,15 +15,31 @@ import { useAuth } from "@/context/AuthContext";
 import { getUserReviews, type Review } from "@/services/userService";
 import { getCurrentUser } from "@/services/authService";
 
+import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
+import FeastFinder from "../../../public/tiers/feastFinder.svg";
+import TrailblazingTaster from "../../../public/tiers/trailblazingTaster.svg";
+import HoneyConnoisseur from "../../../public/tiers/honeyConnoisseur.svg";
+import BearCritic from "../../../public/tiers/bearCritic.svg";
+
+
 export default function ProfileScreen() {
   const [isReview, setIsReview] = useState(true);
   const [isBadge, setIsBadge] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [userReviews, setUserReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [rank, setRank] = useState(0);
   const { user, logout, isAuthenticated, login } = useAuth();
   const router = useRouter();
+
+  const labels: Record<number,string> = {
+    0: "Young Grubber",
+    1: "Feast Finder",
+    2: "Trailblazing Taster",
+    3: "Honey Connoisseur",
+    4: "Supreme Bear Critic",
+  };
+  
 
   // Sync user data when screen comes into focus, but only if it changed
   useFocusEffect(
@@ -85,6 +101,7 @@ export default function ProfileScreen() {
   };
 
   const toggleFavorite = () => {
+    setRank(rank+1)
     setIsBadge(false);
     setIsFavorite(true);
     setIsReview(false);
@@ -166,15 +183,19 @@ export default function ProfileScreen() {
 
           <View className="bg-[#295298] rounded-xl p-4 mb-4">
             <View className="flex-row items-center mb-3">
-              <ChefHat size={24} color="#ffffff" />
+              {rank === 0 && <YoungGrubber width={24} height={24} />}
+              {rank === 1 && <FeastFinder width={24} height={24} />}
+              {rank === 2 && <TrailblazingTaster width={24} height={24} />}
+              {rank === 3 && <HoneyConnoisseur width={24} height={24} />}
+              {rank >= 4 && <BearCritic width={24} height={24} />}
               <Text className="text-white font-bold text-lg ml-2">
-                {user.tier} Food Explorer
+                {labels[Math.min(rank, 4)]}
               </Text>
             </View>
             <View className="h-3 bg-white/30 rounded-full overflow-hidden">
               <View
                 className="h-full bg-white rounded-full"
-                style={{ width: "75%" }}
+                style={{ width: user.exp % 100 + "%" }}
               />
             </View>
           </View>
@@ -305,10 +326,8 @@ export default function ProfileScreen() {
           )}
 
           {isBadge && (
-            <View className="bg-[#C2D0FF] rounded-xl p-8 items-center mb-6">
-              <AppText size="medium" className="text-gray-600 mb-0">
-                No badges yet
-              </AppText>
+            <View className="bg-[#C2D0FF] rounded-xl p-8 items-center mb-6">  
+                {Object.entries(labels).filter(([r]) => Number(r) <= rank).map(([rank, label]) => (<Text className="mb-3" key={rank}>{label}</Text>))}
             </View>
           )}
 

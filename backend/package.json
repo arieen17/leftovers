@@ -4,7 +4,7 @@
   "description": "Backend for R'ATE food rating app",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node start-recommendation-service.js & nodemon src/server.js",
+    "dev": "concurrently \"node start-recommendation-service.js\" \"nodemon src/server.js\"",
     "start": "node start-recommendation-service.js & node src/server.js",
     "test": "jest"
   },
