@@ -2,7 +2,17 @@ const Review = require("../models/Review");
 
 const createReview = async (req, res) => {
   try {
-    const review = await Review.create(req.body);
+    // Get user_id from authenticated request
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const reviewData = {
+      ...req.body,
+      user_id: userId, // Override user_id from request body with authenticated user
+    };
+    const review = await Review.create(reviewData);
     res.status(201).json(review);
   } catch (error) {
     console.error("Review creation error:", error);
@@ -38,8 +48,27 @@ const getUserReviews = async (req, res) => {
   }
 };
 
+const getReviewById = async (req, res) => {
+  try {
+    const reviewId = req.params.reviewId;
+    console.log(`🔵 Fetching review by ID: ${reviewId}`);
+    const userId = req.user?.userId || null;
+    const review = await Review.findById(reviewId, userId);
+    if (!review) {
+      console.log(`❌ Review ${reviewId} not found`);
+      return res.status(404).json({ error: "Review not found" });
+    }
+    console.log(`✅ Successfully fetched review ${reviewId}`);
+    res.json(review);
+  } catch (error) {
+    console.error("Error fetching review:", error);
+    res.status(500).json({ error: "Failed to fetch review" });
+  }
+};
+
 module.exports = {
   createReview,
   getMenuItemReviews,
   getUserReviews,
+  getReviewById,
 };

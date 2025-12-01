@@ -104,7 +104,6 @@ export default function HomeScreen() {
     <TouchableOpacity
       className="bg-white rounded-lg p-4 mb-3 mx-4 shadow-sm border border-gray-200"
       onPress={() => {
-        // Navigate to restaurant details if needed
         console.log("Navigate to restaurant:", item.id);
       }}
     >
@@ -248,7 +247,7 @@ export default function HomeScreen() {
                     key={item.id}
                     className="w-[260] bg-white rounded-[10px] ml-2.5 mr-2.5 shadow-sm border border-gray-200 overflow-hidden"
                     onPress={() => {
-                      router.push(`/review?menuItemId=${item.id}`);
+                      router.push(`/menu-item-reviews?menuItemId=${item.id}`);
                     }}
                   >
                     {item.image_url ? (

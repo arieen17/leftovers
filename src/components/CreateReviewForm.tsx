@@ -23,10 +23,13 @@ import {
   type Restaurant,
   type MenuItem,
 } from "@/services/restaurantService";
+import { createReview } from "@/services/reviewService";
+import { useAuth } from "@/context/AuthContext";
 
 export function CreateReviewForm() {
   const router = useRouter();
   const { addPost } = usePosts();
+  const { isAuthenticated, user } = useAuth();
   const [restaurant, setRestaurant] = useState("");
   const [menuItem, setMenuItem] = useState("");
   const [rating, setRating] = useState(0);
@@ -34,6 +37,7 @@ export function CreateReviewForm() {
   const [review, setReview] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -42,6 +46,9 @@ export function CreateReviewForm() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<
     number | null
   >(null);
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     loadRestaurants();
@@ -104,9 +111,18 @@ export function CreateReviewForm() {
 
     if (selectedRestaurantId !== newRestaurantId) {
       setMenuItem("");
+      setSelectedMenuItemId(null);
     }
 
     setSelectedRestaurantId(newRestaurantId);
+  };
+
+  const handleMenuItemSelect = (menuItemName: string) => {
+    setMenuItem(menuItemName);
+    const selectedMenuItem = menuItems.find(
+      (item) => item.name === menuItemName,
+    );
+    setSelectedMenuItemId(selectedMenuItem?.id || null);
   };
 
   const handleAddTag = () => {
@@ -125,30 +141,68 @@ export function CreateReviewForm() {
     handleAddTag();
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!restaurant || !menuItem || rating === 0 || !review.trim()) {
       Alert.alert("Please fill in all fields before posting");
       return;
     }
 
-    addPost({
-      restaurant,
-      menuItem,
-      rating,
-      photo,
-      review,
-      tags: tags.length > 0 ? tags : undefined,
-    });
+    if (!isAuthenticated) {
+      Alert.alert("Please log in to create a review");
+      return;
+    }
 
-    setRestaurant("");
-    setMenuItem("");
-    setRating(0);
-    setPhoto(undefined);
-    setReview("");
-    setTags([]);
-    setTagInput("");
+    if (!selectedMenuItemId) {
+      Alert.alert("Error", "Please select a valid menu item");
+      return;
+    }
 
-    router.push("/(tabs)");
+    setIsSubmitting(true);
+    try {
+      // Create review in backend
+      const createdReview = await createReview({
+        menu_item_id: selectedMenuItemId,
+        rating,
+        comment: review,
+        photos: photo ? [photo] : undefined,
+      });
+
+      // Also add to local posts context for immediate UI update
+      addPost({
+        restaurant,
+        menuItem,
+        rating,
+        photo,
+        review,
+        tags: tags.length > 0 ? tags : undefined,
+        reviewId: createdReview.id,
+        menuItemId: selectedMenuItemId,
+        userName: user?.name,
+        likeCount: createdReview.like_count ?? 0,
+        commentCount: createdReview.comment_count ?? 0,
+      });
+
+      setRestaurant("");
+      setMenuItem("");
+      setRating(0);
+      setPhoto(undefined);
+      setReview("");
+      setTags([]);
+      setTagInput("");
+      setSelectedMenuItemId(null);
+
+      router.push("/(tabs)");
+    } catch (error) {
+      console.error("Error creating review:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to create review. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -209,7 +263,7 @@ export function CreateReviewForm() {
                 value={menuItem}
                 placeholder="Select item..."
                 options={menuItems.map((item) => item.name)}
-                onSelect={setMenuItem}
+                onSelect={handleMenuItemSelect}
               />
             )}
           </View>
@@ -294,9 +348,16 @@ export function CreateReviewForm() {
 
           <Pressable
             onPress={handlePost}
-            className="bg-[#FCD34D] rounded-lg px-5 py-4 items-center justify-center border border-[#FCD34D]"
+            disabled={isSubmitting}
+            className="bg-[#FCD34D] rounded-lg px-5 py-4 items-center justify-center border border-[#FCD34D] disabled:opacity-50"
           >
-            <Text className="font-bold text-lg text-black uppercase">POST</Text>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="#000000" />
+            ) : (
+              <Text className="font-bold text-lg text-black uppercase">
+                POST
+              </Text>
+            )}
           </Pressable>
         </View>
       </ScrollView>

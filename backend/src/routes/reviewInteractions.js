@@ -6,89 +6,177 @@ const ReviewComment = require("../models/ReviewComment");
 const router = express.Router();
 
 // Like a review
+// Like/Unlike a review
 router.post("/:reviewId/like", authenticate, async (req, res) => {
   try {
     const userId = req.user?.userId;
     const reviewId = req.params.reviewId;
 
     if (!userId) {
-      return res.status(401).json({ error: "User authentication failed" });
+      return res.status(401).json({
+        error: "Authentication required",
+        message: "You must be logged in to like reviews",
+      });
     }
 
-    console.log(`🔵 User ${userId} attempting to like review ${reviewId}`);
+    if (!reviewId || isNaN(reviewId)) {
+      return res.status(400).json({
+        error: "Invalid review ID",
+        message: "Please provide a valid review ID",
+      });
+    }
 
-    const updatedReview = await Review.likeReview(userId, reviewId);
+    console.log(`🔵 User ${userId} toggling like for review ${reviewId}`);
 
-    console.log(`✅ User ${userId} successfully liked review ${reviewId}`);
+    // Determine action based on current state from query param or body
+    const action = req.query.action || req.body.action; // 'like' or 'unlike'
+
+    let result;
+    if (action === "unlike") {
+      result = await Review.unlikeReview(userId, reviewId);
+    } else {
+      result = await Review.likeReview(userId, reviewId);
+    }
+
+    console.log(`✅ User ${userId} toggled like for review ${reviewId}`);
+
     res.json({
-      message: "Review liked",
-      like_count: updatedReview.like_count,
-      user_liked: updatedReview.user_liked,
+      success: true,
+      message: result.user_liked ? "Review liked" : "Review unliked",
+      like_count: result.like_count,
+      user_liked: result.user_liked,
     });
   } catch (error) {
     const userId = req.user?.userId;
     const reviewId = req.params.reviewId;
 
     console.error(
-      `❌ Like review error for user ${userId || "unknown"}, review ${reviewId}:`,
-      error,
+      `❌ Review like error for user ${userId || "unknown"}, review ${reviewId}:`,
+      error.message,
     );
 
-    // Handle specific PostgreSQL errors
-    if (error.code === "23505") {
-      // Unique violation
+    // Handle specific errors
+    if (error.code === "ALREADY_LIKED") {
       return res.status(400).json({
-        error: "Already liked this review",
-        details: "You have already liked this review",
-      });
-    } else if (error.code === "23503") {
-      // Foreign key violation
-      return res.status(404).json({
-        error: "Review not found",
-        details: "The specified review does not exist",
+        error: "Already liked",
+        message: "You have already liked this review",
       });
     }
 
+    if (error.code === "REVIEW_NOT_FOUND") {
+      return res.status(404).json({
+        error: "Review not found",
+        message: "The review you're trying to like does not exist",
+      });
+    }
+
+    if (error.code === "23505") {
+      return res.status(400).json({
+        error: "Duplicate like",
+        message: "You have already liked this review",
+      });
+    }
+
+    if (error.code === "23503") {
+      return res.status(404).json({
+        error: "Review not found",
+        message: "The review you're trying to like does not exist",
+      });
+    }
+
+    // Generic error
     res.status(500).json({
-      error: "Failed to like review",
-      details: error.message,
-      code: error.code,
+      error: "Server error",
+      message: "An unexpected error occurred",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
 
-// Unlike a review
-router.delete("/:reviewId/like", authenticate, async (req, res) => {
+// Like/Unlike a comment
+router.post("/comments/:commentId/like", authenticate, async (req, res) => {
   try {
     const userId = req.user?.userId;
-    const reviewId = req.params.reviewId;
+    const commentId = req.params.commentId;
 
     if (!userId) {
-      return res.status(401).json({ error: "User authentication failed" });
+      return res.status(401).json({
+        error: "Authentication required",
+        message: "You must be logged in to like comments",
+      });
     }
 
-    console.log(`🔵 User ${userId} attempting to unlike review ${reviewId}`);
+    if (!commentId || isNaN(commentId)) {
+      return res.status(400).json({
+        error: "Invalid comment ID",
+        message: "Please provide a valid comment ID",
+      });
+    }
 
-    const updatedReview = await Review.unlikeReview(userId, reviewId);
+    console.log(`🔵 User ${userId} toggling like for comment ${commentId}`);
 
-    console.log(`✅ User ${userId} successfully unliked review ${reviewId}`);
+    const action = req.query.action || req.body.action;
+
+    let result;
+    if (action === "unlike") {
+      result = await ReviewComment.unlikeComment(userId, commentId);
+    } else {
+      result = await ReviewComment.likeComment(userId, commentId);
+    }
+
+    console.log(`✅ User ${userId} toggled like for comment ${commentId}`);
+
     res.json({
-      message: "Review unliked",
-      like_count: updatedReview.like_count,
-      user_liked: updatedReview.user_liked,
+      success: true,
+      message: result.user_liked ? "Comment liked" : "Comment unliked",
+      like_count: result.like_count,
+      user_liked: result.user_liked,
     });
   } catch (error) {
     const userId = req.user?.userId;
-    const reviewId = req.params.reviewId;
+    const commentId = req.params.commentId;
 
     console.error(
-      `❌ Unlike review error for user ${userId || "unknown"}, review ${reviewId}:`,
-      error,
+      `❌ Comment like error for user ${userId || "unknown"}, comment ${commentId}:`,
+      error.message,
     );
+
+    // Handle specific errors
+    if (error.code === "ALREADY_LIKED") {
+      return res.status(400).json({
+        error: "Already liked",
+        message: "You have already liked this comment",
+      });
+    }
+
+    if (error.code === "COMMENT_NOT_FOUND") {
+      return res.status(404).json({
+        error: "Comment not found",
+        message: "The comment you're trying to like does not exist",
+      });
+    }
+
+    if (error.code === "23505") {
+      return res.status(400).json({
+        error: "Duplicate like",
+        message: "You have already liked this comment",
+      });
+    }
+
+    if (error.code === "23503") {
+      return res.status(404).json({
+        error: "Comment not found",
+        message: "The comment you're trying to like does not exist",
+      });
+    }
+
+    // Generic error
     res.status(500).json({
-      error: "Failed to unlike review",
-      details: error.message,
-      code: error.code,
+      error: "Server error",
+      message: "An unexpected error occurred",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
@@ -98,19 +186,49 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
   try {
     const userId = req.user?.userId;
     const reviewId = req.params.reviewId;
-
-    if (!userId) {
-      return res.status(401).json({ error: "User authentication failed" });
-    }
-
-    console.log(
-      `🔵 User ${userId} attempting to comment on review ${reviewId}`,
-    );
-
     const { comment } = req.body;
 
+    if (!userId) {
+      return res.status(401).json({
+        error: "Authentication required",
+        message: "You must be logged in to comment",
+      });
+    }
+
+    if (!reviewId || isNaN(reviewId)) {
+      return res.status(400).json({
+        error: "Invalid review ID",
+        message: "Please provide a valid review ID",
+      });
+    }
+
     if (!comment || !comment.trim()) {
-      return res.status(400).json({ error: "Comment text is required" });
+      return res.status(400).json({
+        error: "Comment required",
+        message: "Please provide comment text",
+      });
+    }
+
+    if (comment.trim().length > 1000) {
+      return res.status(400).json({
+        error: "Comment too long",
+        message: "Comment must be less than 1000 characters",
+      });
+    }
+
+    console.log(`🔵 User ${userId} commenting on review ${reviewId}`);
+
+    // Verify review exists
+    const reviewExists = await pool.query(
+      `SELECT id FROM reviews WHERE id = $1`,
+      [reviewId],
+    );
+
+    if (reviewExists.rows.length === 0) {
+      return res.status(404).json({
+        error: "Review not found",
+        message: "The review you're trying to comment on does not exist",
+      });
     }
 
     const commentData = await ReviewComment.create({
@@ -119,14 +237,29 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
       comment: comment.trim(),
     });
 
-    // Increment comment count in review
+    // Increment comment count
     const updatedReview = await Review.incrementCommentCount(reviewId);
 
-    console.log(
-      `✅ User ${userId} successfully commented on review ${reviewId}`,
+    console.log(`✅ User ${userId} commented on review ${reviewId}`);
+
+    // Fetch user details for the response
+    const userResult = await pool.query(
+      `SELECT name, tier FROM users WHERE id = $1`,
+      [userId],
     );
+
+    const user = userResult.rows[0];
+
     res.status(201).json({
-      ...commentData,
+      success: true,
+      message: "Comment added successfully",
+      comment: {
+        ...commentData,
+        user_name: user?.name || "User",
+        user_tier: user?.tier || "Bronze",
+        like_count: 0,
+        user_liked: false,
+      },
       comment_count: updatedReview.comment_count,
     });
   } catch (error) {
@@ -135,22 +268,21 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
 
     console.error(
       `❌ Add comment error for user ${userId || "unknown"}, review ${reviewId}:`,
-      error,
+      error.message,
     );
 
-    // Handle specific PostgreSQL errors
     if (error.code === "23503") {
-      // Foreign key violation
       return res.status(404).json({
         error: "Review not found",
-        details: "The specified review does not exist",
+        message: "The review you're trying to comment on does not exist",
       });
     }
 
     res.status(500).json({
-      error: "Failed to add comment",
-      details: error.message,
-      code: error.code,
+      error: "Server error",
+      message: "Failed to add comment",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
