@@ -49,6 +49,45 @@ class Review {
     );
     return result.rows[0];
   }
+  static async getReviewWithLikesAndComments(reviewId) {
+  const result = await pool.query(
+    `SELECT 
+      r.*,
+      u.name as user_name,
+      u.tier as user_tier,
+      COUNT(DISTINCT rl.id) as like_count,
+      COUNT(DISTINCT rc.id) as comment_count,
+      EXISTS(SELECT 1 FROM review_likes WHERE review_id = r.id AND user_id = $2) as user_liked
+    FROM reviews r
+    LEFT JOIN users u ON r.user_id = u.id
+    LEFT JOIN review_likes rl ON r.id = rl.review_id
+    LEFT JOIN review_comments rc ON r.id = rc.review_id
+    WHERE r.id = $1
+    GROUP BY r.id, u.name, u.tier`,
+    [reviewId, userId] // userId for checking if current user liked it
+  );
+  return result.rows[0];
+}
+
+static async likeReview(userId, reviewId) {
+  const result = await pool.query(
+    `INSERT INTO review_likes (user_id, review_id) 
+     VALUES ($1, $2) 
+     RETURNING *`,
+    [userId, reviewId]
+  );
+  return result.rows[0];
+}
+
+static async unlikeReview(userId, reviewId) {
+  const result = await pool.query(
+    `DELETE FROM review_likes 
+     WHERE user_id = $1 AND review_id = $2 
+     RETURNING *`,
+    [userId, reviewId]
+  );
+  return result.rows[0];
+}
 }
 
 module.exports = Review;
