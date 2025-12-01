@@ -11,9 +11,10 @@ const authenticate = (req, res, next) => {
     }
 
     const decoded = verifyToken(token);
-    req.userId = decoded.userId;
+    req.user = decoded; // This should set req.user with userId
     next();
   } catch (error) {
+    console.error("Authentication error:", error);
     res.status(401).json({ error: "Invalid token" });
   }
 };

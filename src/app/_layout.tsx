@@ -41,6 +41,7 @@ export default function RootLayout() {
           <Stack.Screen name="signup" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+          <Stack.Screen name="review" options={{ headerShown: false }} />
         </Stack>
       </PostsProvider>
     </AuthProvider>
