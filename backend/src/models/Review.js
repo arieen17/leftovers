@@ -66,82 +66,114 @@ class Review {
     return result.rows[0];
   }
 
-  static async likeReview(userId, reviewId) {
-    // Use transaction to ensure both operations succeed
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-
-      // Insert the like
-      const likeResult = await client.query(
-        `INSERT INTO review_likes (user_id, review_id) 
-         VALUES ($1, $2) 
-         RETURNING *`,
-        [userId, reviewId],
-      );
-
-      // Increment the like count
-      await client.query(
-        `UPDATE reviews SET like_count = like_count + 1 WHERE id = $1`,
-        [reviewId],
-      );
-
-      await client.query("COMMIT");
-
-      // Get updated review with counts
-      const reviewResult = await client.query(
-        `SELECT *, 
-         EXISTS(SELECT 1 FROM review_likes WHERE review_id = $1 AND user_id = $2) as user_liked
-         FROM reviews WHERE id = $1`,
-        [reviewId, userId],
-      );
-
-      return reviewResult.rows[0];
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+  // In Review.js
+static async likeReview(userId, reviewId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // First check if already liked
+    const existingLike = await client.query(
+      `SELECT * FROM review_likes WHERE user_id = $1 AND review_id = $2`,
+      [userId, reviewId]
+    );
+    
+    if (existingLike.rows.length > 0) {
+      // Already liked - unlike instead
+      await client.query('ROLLBACK');
+      return await this.unlikeReview(userId, reviewId);
     }
-  }
-
-  static async unlikeReview(userId, reviewId) {
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-
-      // Delete the like
-      const unlikeResult = await client.query(
-        `DELETE FROM review_likes 
-         WHERE user_id = $1 AND review_id = $2 
-         RETURNING *`,
-        [userId, reviewId],
-      );
-
-      // Decrement the like count
-      await client.query(
-        `UPDATE reviews SET like_count = GREATEST(0, like_count - 1) WHERE id = $1`,
-        [reviewId],
-      );
-
-      await client.query("COMMIT");
-
-      // Get updated review with counts
-      const reviewResult = await client.query(
-        `SELECT *, 
-         EXISTS(SELECT 1 FROM review_likes WHERE review_id = $1 AND user_id = $2) as user_liked
-         FROM reviews WHERE id = $1`,
-        [reviewId, userId],
-      );
-
-      return reviewResult.rows[0];
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+    
+    // Insert the like
+    await client.query(
+      `INSERT INTO review_likes (user_id, review_id) VALUES ($1, $2)`,
+      [userId, reviewId]
+    );
+    
+    // Get updated counts
+    const likeCountResult = await client.query(
+      `SELECT COUNT(*) as like_count FROM review_likes WHERE review_id = $1`,
+      [reviewId]
+    );
+    
+    await client.query('COMMIT');
+    
+    return {
+      like_count: parseInt(likeCountResult.rows[0].like_count),
+      user_liked: true
+    };
+    
+  } catch (error) {
+    await client.query('ROLLBACK');
+    
+    // Handle specific errors
+    if (error.code === '23505') { // Unique violation
+      const customError = new Error('User has already liked this review');
+      customError.code = 'ALREADY_LIKED';
+      throw customError;
+    } else if (error.code === '23503') { // Foreign key violation
+      const customError = new Error('Review not found');
+      customError.code = 'REVIEW_NOT_FOUND';
+      throw customError;
     }
+    
+    throw error;
+  } finally {
+    client.release();
   }
+}
+
+static async unlikeReview(userId, reviewId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // First check if like exists
+    const existingLike = await client.query(
+      `SELECT * FROM review_likes WHERE user_id = $1 AND review_id = $2`,
+      [userId, reviewId]
+    );
+    
+    if (existingLike.rows.length === 0) {
+      // Not liked yet - like instead
+      await client.query('ROLLBACK');
+      return await this.likeReview(userId, reviewId);
+    }
+    
+    // Delete the like
+    const deleteResult = await client.query(
+      `DELETE FROM review_likes WHERE user_id = $1 AND review_id = $2 RETURNING *`,
+      [userId, reviewId]
+    );
+    
+    // Get updated counts
+    const likeCountResult = await client.query(
+      `SELECT COUNT(*) as like_count FROM review_likes WHERE review_id = $1`,
+      [reviewId]
+    );
+    
+    await client.query('COMMIT');
+    
+    return {
+      like_count: parseInt(likeCountResult.rows[0].like_count),
+      user_liked: false
+    };
+    
+  } catch (error) {
+    await client.query('ROLLBACK');
+    
+    // Handle specific errors
+    if (error.code === '23503') { // Foreign key violation
+      const customError = new Error('Review not found');
+      customError.code = 'REVIEW_NOT_FOUND';
+      throw customError;
+    }
+    
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
   static async incrementCommentCount(reviewId) {
     const result = await pool.query(
