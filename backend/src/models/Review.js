@@ -2,21 +2,20 @@ const pool = require("../../database/config");
 
 class Review {
   static async create(reviewData) {
-    const result = await pool.query(
-      `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos, tags, like_count, comment_count)
-       VALUES ($1, $2, $3, $4, $5, $6, 0, 0)
-       RETURNING *`,
-      [
-        reviewData.user_id,
-        reviewData.menu_item_id,
-        reviewData.rating,
-        reviewData.comment,
-        reviewData.photos,
-        reviewData.tags || [],
-      ]
-    );
-    return result.rows[0];
-  }
+  const result = await pool.query(
+    `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos, like_count, comment_count)
+     VALUES ($1, $2, $3, $4, $5, 0, 0)
+     RETURNING *`,
+    [
+      reviewData.user_id,
+      reviewData.menu_item_id,
+      reviewData.rating,
+      reviewData.comment,
+      reviewData.photos,
+    ],
+  );
+  return result.rows[0];
+}
 
   static async findByMenuItem(menuItemId, userId = null) {
     let query = `
