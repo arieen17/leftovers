@@ -149,7 +149,7 @@ export default function ProfileScreen() {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     if (diffHours < 1) return "Just now";
     if (diffHours === 1) return "1hr ago";
-    return `${diffHours}hr ago`;
+    return `${diffHours} hr ago`;
   };
 
   const reviewCount = userReviews.length;
