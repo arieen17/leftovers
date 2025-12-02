@@ -1,4 +1,4 @@
-import { View, Image, Pressable, Alert } from "react-native";
+import { View, Image, Pressable, Alert, Text } from "react-native";
 import { AppText } from "./AppText";
 import { Star, Trash2 } from "lucide-react-native";
 import { Post, usePosts } from "@/context/PostsContext";
@@ -29,7 +29,7 @@ export function PostCard({ post }: PostCardProps) {
           style: "destructive",
           onPress: () => deletePost(post.id),
         },
-      ],
+      ]
     );
   };
 
