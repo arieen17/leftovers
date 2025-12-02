@@ -76,6 +76,8 @@ export default function DiscoverScreen() {
   const [loadingComments, setLoadingComments] = useState<{
     [key: number]: boolean;
   }>({});
+  const [likingReview, setLikingReview] = useState<number | null>(null);
+  const [likingComment, setLikingComment] = useState<number | null>(null);
 
   const { user, isAuthenticated } = useAuth();
 
@@ -160,62 +162,92 @@ export default function DiscoverScreen() {
   };
 
   const handleLikeReview = async (reviewId: number, menuItemId: number) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || likingReview === reviewId) return;
 
     try {
+      setLikingReview(reviewId);
       const token = getAuthToken();
       if (!token) return;
 
-      // Check current state to decide whether to like or unlike
-      const currentReview = reviews[menuItemId]?.find((r) => r.id === reviewId);
+      // Get current state
+      const currentReview = reviews[menuItemId]?.find(r => r.id === reviewId);
       const isCurrentlyLiked = currentReview?.user_liked || false;
+      
+      // Always use POST with action parameter
+      const action = isCurrentlyLiked ? 'unlike' : 'like';
+      
+      const response = await apiRequest<any>(
+        `/api/reviews/${reviewId}/like?action=${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      // Update the specific review in state directly
+      setReviews((prev) => ({
+        ...prev,
+        [menuItemId]:
+          prev[menuItemId]?.map((review) =>
+            review.id === reviewId
+              ? {
+                  ...review,
+                  like_count: response.like_count || 0,
+                  user_liked: response.user_liked || false,
+                }
+              : review,
+          ) || [],
+      }));
 
-      await apiRequest<{
-        message: string;
-        like_count: number;
-        user_liked: boolean;
-      }>(`/api/reviews/${reviewId}/like`, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Simply reload the reviews for this item
-      await loadReviewsForItem(menuItemId);
     } catch (error) {
       console.error("Error liking/unliking review:", error);
+    } finally {
+      setLikingReview(null);
     }
   };
 
   const handleLikeComment = async (commentId: number, reviewId: number) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || likingComment === commentId) return;
 
     try {
+      setLikingComment(commentId);
       const token = getAuthToken();
       if (!token) return;
 
-      // Check current state
-      const currentComment = comments[reviewId]?.find(
-        (c) => c.id === commentId,
-      );
+      // Get current state
+      const currentComment = comments[reviewId]?.find(c => c.id === commentId);
       const isCurrentlyLiked = currentComment?.user_liked || false;
+      
+      // Always use POST with action parameter
+      const action = isCurrentlyLiked ? 'unlike' : 'like';
+      
+      const response = await apiRequest<any>(
+        `/api/reviews/comments/${commentId}/like?action=${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      // Update the specific comment in state directly
+      setComments((prev) => ({
+        ...prev,
+        [reviewId]:
+          prev[reviewId]?.map((comment) =>
+            comment.id === commentId
+              ? {
+                  ...comment,
+                  like_count: response.like_count || 0,
+                  user_liked: response.user_liked || false,
+                }
+              : comment,
+          ) || [],
+      }));
 
-      await apiRequest<{
-        message: string;
-        like_count: number;
-        user_liked: boolean;
-      }>(`/api/reviews/comments/${commentId}/like`, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Simply reload the comments for this review
-      await loadCommentsForReview(reviewId);
     } catch (error) {
       console.error("Error liking/unliking comment:", error);
+    } finally {
+      setLikingComment(null);
     }
   };
 
@@ -237,7 +269,7 @@ export default function DiscoverScreen() {
 
       setNewComments((prev) => ({ ...prev, [reviewId]: "" }));
 
-      // Add the new comment to state and update review comment count
+      // Add the new comment to state
       setComments((prev) => ({
         ...prev,
         [reviewId]: [...(prev[reviewId] || []), response],
@@ -249,7 +281,7 @@ export default function DiscoverScreen() {
         [menuItemId]:
           prev[menuItemId]?.map((review) =>
             review.id === reviewId
-              ? { ...review, comment_count: response.comment_count }
+              ? { ...review, comment_count: response.comment_count || (review.comment_count || 0) + 1 }
               : review,
           ) || [],
       }));
@@ -383,13 +415,18 @@ export default function DiscoverScreen() {
                       <View className="flex-row items-center space-x-3">
                         <TouchableOpacity
                           className="flex-row items-center"
-                          onPress={() => handleLikeReview(review.id)}
+                          onPress={() => handleLikeReview(review.id, item.id)}
+                          disabled={likingReview === review.id}
                         >
-                          <Heart
-                            size={16}
-                            fill={review.user_liked ? "#EF4444" : "transparent"}
-                            color={review.user_liked ? "#EF4444" : "#6B7280"}
-                          />
+                          {likingReview === review.id ? (
+                            <ActivityIndicator size={14} color="#EF4444" />
+                          ) : (
+                            <Heart
+                              size={16}
+                              fill={review.user_liked ? "#EF4444" : "transparent"}
+                              color={review.user_liked ? "#EF4444" : "#6B7280"}
+                            />
+                          )}
                           <AppText size="small" className="text-gray-600 ml-1">
                             {review.like_count || 0}
                           </AppText>
@@ -439,19 +476,24 @@ export default function DiscoverScreen() {
                               <View className="flex-row justify-between items-center mt-1">
                                 <TouchableOpacity
                                   className="flex-row items-center"
-                                  onPress={() => handleLikeComment(comment.id)}
+                                  onPress={() => handleLikeComment(comment.id, review.id)}
+                                  disabled={likingComment === comment.id}
                                 >
-                                  <Heart
-                                    size={14}
-                                    fill={
-                                      comment.user_liked
-                                        ? "#EF4444"
-                                        : "transparent"
-                                    }
-                                    color={
-                                      comment.user_liked ? "#EF4444" : "#6B7280"
-                                    }
-                                  />
+                                  {likingComment === comment.id ? (
+                                    <ActivityIndicator size={12} color="#EF4444" />
+                                  ) : (
+                                    <Heart
+                                      size={14}
+                                      fill={
+                                        comment.user_liked
+                                          ? "#EF4444"
+                                          : "transparent"
+                                      }
+                                      color={
+                                        comment.user_liked ? "#EF4444" : "#6B7280"
+                                      }
+                                    />
+                                  )}
                                   <AppText
                                     size="small"
                                     className="text-gray-500 ml-1"
@@ -482,12 +524,12 @@ export default function DiscoverScreen() {
                                   }))
                                 }
                                 onSubmitEditing={() =>
-                                  handleAddComment(review.id)
+                                  handleAddComment(review.id, item.id)
                                 }
                               />
                               <TouchableOpacity
                                 className="ml-2 bg-[#295298] rounded-full p-2"
-                                onPress={() => handleAddComment(review.id)}
+                                onPress={() => handleAddComment(review.id, item.id)}
                               >
                                 <Send size={16} color="#FFFFFF" />
                               </TouchableOpacity>
