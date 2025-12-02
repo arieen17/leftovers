@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
-import { Star, Heart, MessageCircle } from "lucide-react-native";
+import { ChefHat, Star, Heart, MessageCircle } from "lucide-react-native";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
 import FeastFinder from "../../../public/tiers/feastFinder.svg";
@@ -47,6 +47,16 @@ export default function ProfileScreen() {
     2: "Trailblazing Taster",
     3: "Honey Connoisseur",
     4: "Supreme Bear Critic",
+  };
+
+  // Calculate rank based on XP/level
+  const getRankFromXP = (xp: number): number => {
+    const level = Math.floor(xp / 1000) + 1;
+    if (level <= 2) return 0; // Young Grubber
+    if (level <= 4) return 1; // Feast Finder
+    if (level <= 6) return 2; // Trailblazing Taster
+    if (level <= 8) return 3; // Honey Connoisseur
+    return 4; // Supreme Bear Critic
   };
 
   // Sync user data when screen comes into focus, but only if it changed
@@ -94,13 +104,15 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
+  // Load reviews and stats when screen comes into focus (so it's always up-to-date)
+  // FIXED: Combined into single useFocusEffect like teammate's version
   useFocusEffect(
     useCallback(() => {
       if (isAuthenticated && user && isReview) {
         loadUserReviews();
         loadUserStats();
       }
-    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats])
+    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats]) // FIXED: Proper dependencies
   );
 
   const handleLogout = () => {
@@ -130,30 +142,6 @@ export default function ProfileScreen() {
     setIsReview(false);
   };
 
-  const getRankFromXP = (xp: number): number => {
-    const level = Math.floor(xp / 1000) + 1;
-    if (level <= 2) return 0;
-    if (level <= 4) return 1;
-    if (level <= 6) return 2;
-    if (level <= 8) return 3;
-    return 4;
-  };
-
-  const getRankBadge = (rank: number) => {
-    switch (rank) {
-      case 0:
-        return <YoungGrubber width={24} height={24} />;
-      case 1:
-        return <FeastFinder width={24} height={24} />;
-      case 2:
-        return <TrailblazingTaster width={24} height={24} />;
-      case 3:
-        return <HoneyConnoisseur width={24} height={24} />;
-      default:
-        return <BearCritic width={24} height={24} />;
-    }
-  };
-
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -165,7 +153,8 @@ export default function ProfileScreen() {
   };
 
   const reviewCount = userReviews.length;
-  const totalLikes = userStats.likes_received; // CHANGED: Use actual likes from stats
+  const totalLikes = userStats.likes_received;
+  const currentRank = getRankFromXP(userStats.xp || 0);
 
   if (!isAuthenticated || !user) {
     return (
@@ -232,22 +221,31 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* XP DISPLAY WITH RANK */}
-          <View className="bg-[#76abc7] rounded-xl p-4 mb-4">
+          {/* XP DISPLAY WITH RANK - MERGED SECTION */}
+          <View className="bg-[#76abc7] rounded-xl p-4 mb-4 relative">
+            <View className="flex-row items-center justify-between mb-2">
+              <View className="flex-row items-center flex-1">
+                <ChefHat size={20} color="#ffffff" />
+                <Text className="text-white font-bold text-md ml-2">
+                  {loadingStats ? "Loading..." : labels[currentRank]}
+                </Text>
+              </View>
+              <View className="absolute right-4 top-4">
+                {currentRank === 0 && <YoungGrubber width={32} height={32} />}
+                {currentRank === 1 && <FeastFinder width={32} height={32} />}
+                {currentRank === 2 && (
+                  <TrailblazingTaster width={32} height={32} />
+                )}
+                {currentRank === 3 && (
+                  <HoneyConnoisseur width={32} height={32} />
+                )}
+                {currentRank >= 4 && <BearCritic width={32} height={32} />}
+              </View>
+            </View>
             {loadingStats ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <>
-                <View className="flex-row items-center justify-between mb-3">
-                  <View className="flex-row items-center flex-1">
-                    <Text className="text-white font-bold text-lg">
-                      {labels[getRankFromXP(userStats.xp || 0)]}
-                    </Text>
-                  </View>
-                  <View className="ml-2">
-                    {getRankBadge(getRankFromXP(userStats.xp || 0))}
-                  </View>
-                </View>
                 <View className="h-3 bg-white/30 rounded-full overflow-hidden mb-1">
                   <View
                     className="h-full bg-white rounded-full"
@@ -397,7 +395,7 @@ export default function ProfileScreen() {
           {isBadge && (
             <View className="bg-[#C2D0FF] rounded-xl p-8 items-center mb-6">
               {Object.entries(labels)
-                .filter(([r]) => Number(r) <= getRankFromXP(userStats.xp || 0))
+                .filter(([r]) => Number(r) <= currentRank)
                 .map(([rank, label]) => (
                   <Text className="mb-3" key={rank}>
                     {label}
