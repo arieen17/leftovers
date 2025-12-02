@@ -11,8 +11,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { X, Plus } from "lucide-react-native";
-import * as Notifications from "expo-notifications";
 import { AppText } from "./AppText";
 import { Dropdown } from "./Dropdown";
 import { StarRating } from "./StarRating";
@@ -36,8 +34,6 @@ export function CreateReviewForm() {
   const [rating, setRating] = useState(0);
   const [photo, setPhoto] = useState<string | undefined>();
   const [review, setReview] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -126,44 +122,6 @@ export function CreateReviewForm() {
     setSelectedMenuItemId(selectedMenuItem?.id || null);
   };
 
-  const handleAddTag = () => {
-    const trimmedTag = tagInput.trim();
-    if (trimmedTag && !tags.includes(trimmedTag)) {
-      setTags([...tags, trimmedTag]);
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
-  };
-
-  const handleTagInputSubmit = () => {
-    handleAddTag();
-  };
-
-  // Notification function for successful review posting
-  const sendReviewNotification = async (itemName: string, rating: number) => {
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Review Posted! ⭐",
-          body: `You rated "${itemName}" ${rating} star${rating !== 1 ? "s" : ""}!`,
-          data: {
-            type: "review_created",
-            rating: rating,
-            itemName: itemName,
-          },
-        },
-        trigger: null, // Show immediately
-      });
-      console.log("✅ Review notification sent");
-    } catch (error) {
-      console.log("❌ Failed to send notification:", error);
-      // Don't show error to user - notification failure shouldn't break review posting
-    }
-  };
-
   const handlePost = async () => {
     if (!restaurant || !menuItem || rating === 0 || !review.trim()) {
       Alert.alert("Please fill in all fields before posting");
@@ -188,7 +146,6 @@ export function CreateReviewForm() {
         rating,
         comment: review,
         photos: photo ? [photo] : undefined,
-        tags: tags.length > 0 ? tags : undefined,
       });
 
       // Also add to local posts context for immediate UI update
@@ -198,7 +155,6 @@ export function CreateReviewForm() {
         rating,
         photo,
         review,
-        tags: tags.length > 0 ? tags : undefined,
         reviewId: createdReview.id,
         menuItemId: selectedMenuItemId,
         userName: user?.name,
@@ -209,19 +165,25 @@ export function CreateReviewForm() {
       // Refresh posts from backend to ensure sync
       await loadUserReviews();
 
-      // Send notification after successful review creation
-      await sendReviewNotification(menuItem, rating);
-
-      setRestaurant("");
-      setMenuItem("");
-      setRating(0);
-      setPhoto(undefined);
-      setReview("");
-      setTags([]);
-      setTagInput("");
-      setSelectedMenuItemId(null);
-
-      router.push("/(tabs)");
+      // Show success message with XP info
+      Alert.alert(
+        "Review Posted!",
+        `Thanks for your review! You earned 50 XP.`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              setRestaurant("");
+              setMenuItem("");
+              setRating(0);
+              setPhoto(undefined);
+              setReview("");
+              setSelectedMenuItemId(null);
+              router.push("/(tabs)");
+            },
+          },
+        ]
+      );
     } catch (error) {
       console.error("Error creating review:", error);
       Alert.alert(
@@ -329,51 +291,6 @@ export function CreateReviewForm() {
               className="bg-[#F5F5DC] rounded-lg px-4 py-3 border border-[#E5E5D5] text-base text-gray-900 min-h-[120px]"
               textAlignVertical="top"
             />
-          </View>
-
-          <View className="mb-6">
-            <Text
-              className="mb-2 text-black text-base font-bold font-bayon uppercase tracking-[2]"
-              style={{ fontFamily: "Bayon_400Regular", letterSpacing: 2 }}
-            >
-              TAGS
-            </Text>
-            <View className="flex-row gap-2 mb-2">
-              <TextInput
-                value={tagInput}
-                onChangeText={setTagInput}
-                placeholder="Add a tag..."
-                placeholderTextColor="#9CA3AF"
-                onSubmitEditing={handleTagInputSubmit}
-                className="flex-1 bg-[#F5F5DC] rounded-lg px-4 py-3 border border-[#E5E5D5] text-base text-gray-900"
-              />
-              <Pressable
-                onPress={handleAddTag}
-                className="bg-blue-600 rounded-lg px-4 py-3 justify-center items-center"
-              >
-                <Plus size={20} color="#ffffff" />
-              </Pressable>
-            </View>
-            {tags.length > 0 && (
-              <View className="flex-row flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <View
-                    key={index}
-                    className="bg-blue-100 rounded-full px-3 py-1.5 flex-row items-center gap-2"
-                  >
-                    <Text className="text-blue-800 text-sm font-medium">
-                      {tag}
-                    </Text>
-                    <Pressable
-                      onPress={() => handleRemoveTag(tag)}
-                      className="p-0.5"
-                    >
-                      <X size={14} color="#1E40AF" />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            )}
           </View>
 
           <Pressable

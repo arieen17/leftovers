@@ -8,7 +8,6 @@ export interface Review {
   rating: number;
   comment: string;
   photos: string[];
-  tags?: string[];
   created_at: string;
   user_name?: string;
   user_tier?: string;
@@ -24,7 +23,7 @@ export interface CreateReviewData {
   rating: number;
   comment: string;
   photos?: string[];
-  tags?: string[];
+  // REMOVED: tags?: string[];
 }
 
 /**
@@ -46,12 +45,19 @@ export async function createReview(
       token ? `${token.substring(0, 20)}...` : "NO TOKEN"
     );
 
+    // Remove tags from the data sent to backend since reviews table doesn't have tags column
+    const { photos, ...rest } = reviewData;
+    const payload = {
+      ...rest,
+      photos: photos || [],
+    };
+
     const review = await apiRequest<Review>("/api/reviews", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(reviewData),
+      body: JSON.stringify(payload),
     });
 
     console.log("✅ Review created successfully:", review);

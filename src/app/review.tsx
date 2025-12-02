@@ -55,6 +55,7 @@ export default function ReviewScreen() {
   const [newComment, setNewComment] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [likingReview, setLikingReview] = useState(false); // ADDED: Loading state for like
 
   const loadReview = useCallback(async () => {
     try {
@@ -144,33 +145,37 @@ export default function ReviewScreen() {
   };
 
   const handleLikeReview = async () => {
-    if (!isAuthenticated || !review) return;
+    if (!isAuthenticated || !review || likingReview) return;
 
     try {
+      setLikingReview(true);
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await apiRequest<{
-        like_count: number;
-        user_liked: boolean;
-      }>(`/api/reviews/${review.id}/like`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      // Determine action based on current state
+      const action = isLiked ? 'unlike' : 'like';
+      
+      const response = await apiRequest<any>(
+        `/api/reviews/${review.id}/like?action=${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
         },
-      });
+      );
 
-      setIsLiked(response.user_liked);
-      setLikeCount(response.like_count);
+      setIsLiked(response.user_liked || false);
+      setLikeCount(response.like_count || 0);
       if (review) {
         setReview({
           ...review,
-          like_count: response.like_count,
-          user_liked: response.user_liked,
+          like_count: response.like_count || 0,
+          user_liked: response.user_liked || false,
         });
       }
     } catch (error) {
-      console.error("Error liking review:", error);
+      console.error("Error liking/unliking review:", error);
+    } finally {
+      setLikingReview(false);
     }
   };
 
@@ -280,13 +285,17 @@ export default function ReviewScreen() {
           <TouchableOpacity
             onPress={handleLikeReview}
             className="flex-row items-center"
-            disabled={!isAuthenticated}
+            disabled={!isAuthenticated || likingReview}
           >
-            <Heart
-              size={20}
-              fill={isLiked ? "#EF4444" : "transparent"}
-              color={isLiked ? "#EF4444" : "#6B7280"}
-            />
+            {likingReview ? (
+              <ActivityIndicator size={14} color="#EF4444" />
+            ) : (
+              <Heart
+                size={20}
+                fill={isLiked ? "#EF4444" : "transparent"}
+                color={isLiked ? "#EF4444" : "#6B7280"}
+              />
+            )}
             <Text className="text-sm text-gray-700 ml-1">{likeCount}</Text>
           </TouchableOpacity>
           <View className="flex-row items-center">
