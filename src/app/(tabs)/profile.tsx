@@ -46,7 +46,7 @@ export default function ProfileScreen() {
     1: "Feast Finder",
     2: "Trailblazing Taster",
     3: "Honey Connoisseur",
-    4: "Supreme Bear Critic",
+    4: "Supreme Scotty Critic",
   };
 
   // Calculate rank based on XP/level
@@ -230,7 +230,7 @@ export default function ProfileScreen() {
                   {loadingStats ? "Loading..." : labels[currentRank]}
                 </Text>
               </View>
-              <View className="absolute right-4 top-4">
+              <View>
                 {currentRank === 0 && <YoungGrubber width={32} height={32} />}
                 {currentRank === 1 && <FeastFinder width={32} height={32} />}
                 {currentRank === 2 && (
