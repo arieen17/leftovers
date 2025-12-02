@@ -29,7 +29,26 @@ const updateUser = async (req, res) => {
     res.status(500).json({ error: "Failed to update user profile" });
   }
 };
-
+const getUserStats = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    
+    const user = await User.getUserProfile(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    res.json({
+      xp: user.xp || 0,
+      likes_received: user.likes_received || 0
+    });
+  } catch (error) {
+    console.error("Error fetching user stats:", error);
+    res.status(500).json({ error: "Failed to fetch user stats" });
+  }
+};
 module.exports = {
   updateUser,
+  getUserStats,
 };

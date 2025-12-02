@@ -1,29 +1,28 @@
 const Review = require("../models/Review");
+const User = require("../models/User");
 
 const createReview = async (req, res) => {
   try {
-    // Get user_id from authenticated request
-    const userId = req.user?.userId;
+    const userId = req.body.user_id || req.user?.userId;
+    
     if (!userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+      return res.status(400).json({ error: "User ID is required" });
     }
 
-    const reviewData = {
-      ...req.body,
-      user_id: userId, // Override user_id from request body with authenticated user
-    };
-    const review = await Review.create(reviewData);
+    const review = await Review.create(req.body);
+    
+    // ADD XP for creating a review
+    await User.addXP(userId, 50);
+    
     res.status(201).json(review);
   } catch (error) {
     console.error("Review creation error:", error);
     if (error.code === "23505") {
-      // Unique violation
       return res
         .status(400)
         .json({ error: "You have already reviewed this menu item" });
     }
     if (error.code === "23503") {
-      // Foreign key violation
       return res.status(400).json({ error: "Invalid user_id or menu_item_id" });
     }
     res.status(500).json({ error: "Failed to create review" });
