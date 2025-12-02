@@ -27,13 +27,20 @@ export interface CreateReviewData {
  * Create a new review
  */
 export async function createReview(
-  reviewData: CreateReviewData,
+  reviewData: CreateReviewData
 ): Promise<Review> {
   try {
     const token = getAuthToken();
     if (!token) {
-      throw new Error("User not authenticated");
+      throw new Error(
+        "User not authenticated. Please log in to create a review."
+      );
     }
+
+    console.log(
+      "🔵 Creating review with token:",
+      token ? `${token.substring(0, 20)}...` : "NO TOKEN"
+    );
 
     const review = await apiRequest<Review>("/api/reviews", {
       method: "POST",
@@ -43,9 +50,13 @@ export async function createReview(
       body: JSON.stringify(reviewData),
     });
 
+    console.log("✅ Review created successfully:", review);
     return review;
   } catch (error) {
-    console.error("Error creating review:", error);
+    console.error("❌ Error creating review:", error);
+    if (error instanceof Error && error.message.includes("Invalid token")) {
+      throw new Error("Your session has expired. Please log in again.");
+    }
     throw error;
   }
 }
@@ -77,15 +88,37 @@ export async function getReviewById(reviewId: number): Promise<Review> {
  * Get reviews for a menu item
  */
 export async function getMenuItemReviews(
-  menuItemId: number,
+  menuItemId: number
 ): Promise<Review[]> {
   try {
     const reviews = await apiRequest<Review[]>(
-      `/api/reviews/menu-item/${menuItemId}`,
+      `/api/reviews/menu-item/${menuItemId}`
     );
     return reviews;
   } catch (error) {
     console.error("Error fetching menu item reviews:", error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a review
+ */
+export async function deleteReview(reviewId: number): Promise<void> {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    await apiRequest(`/api/reviews/${reviewId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting review:", error);
     throw error;
   }
 }
