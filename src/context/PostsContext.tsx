@@ -32,6 +32,10 @@ type PostsContextType = {
   posts: Post[];
   addPost: (post: Omit<Post, "id" | "createdAt">) => void;
   deletePost: (postId: string) => Promise<void>;
+  updatePost: (
+    reviewId: number,
+    updates: { likeCount?: number; commentCount?: number }
+  ) => void;
   loadUserReviews: () => Promise<void>;
   loading: boolean;
 };
@@ -48,7 +52,7 @@ const convertReviewToPost = (review: UserReview): Post => {
     photo:
       review.photos && review.photos.length > 0 ? review.photos[0] : undefined,
     review: review.comment || "",
-    tags: review.menu_item_tags || [],
+    tags: review.tags || [],
     createdAt: new Date(review.created_at),
     reviewId: review.id,
     menuItemId: review.menu_item_id,
@@ -136,9 +140,39 @@ export function PostsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePost = (
+    reviewId: number,
+    updates: { likeCount?: number; commentCount?: number }
+  ) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.reviewId === reviewId
+          ? {
+              ...post,
+              likeCount:
+                updates.likeCount !== undefined
+                  ? updates.likeCount
+                  : post.likeCount,
+              commentCount:
+                updates.commentCount !== undefined
+                  ? updates.commentCount
+                  : post.commentCount,
+            }
+          : post
+      )
+    );
+  };
+
   return (
     <PostsContext.Provider
-      value={{ posts, addPost, deletePost, loadUserReviews, loading }}
+      value={{
+        posts,
+        addPost,
+        deletePost,
+        updatePost,
+        loadUserReviews,
+        loading,
+      }}
     >
       {children}
     </PostsContext.Provider>

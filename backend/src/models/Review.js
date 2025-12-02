@@ -3,8 +3,8 @@ const pool = require("../../database/config");
 class Review {
   static async create(reviewData) {
     const result = await pool.query(
-      `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos, like_count, comment_count)
-       VALUES ($1, $2, $3, $4, $5, 0, 0)
+      `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos, tags, like_count, comment_count)
+       VALUES ($1, $2, $3, $4, $5, $6, 0, 0)
        RETURNING *`,
       [
         reviewData.user_id,
@@ -12,6 +12,7 @@ class Review {
         reviewData.rating,
         reviewData.comment,
         reviewData.photos,
+        reviewData.tags || [],
       ]
     );
     return result.rows[0];
@@ -50,7 +51,6 @@ class Review {
       `SELECT 
         reviews.*, 
         menu_items.name as menu_item_name, 
-        menu_items.tags as menu_item_tags,
         restaurants.name as restaurant_name
        FROM reviews 
        JOIN menu_items ON reviews.menu_item_id = menu_items.id
@@ -67,7 +67,10 @@ class Review {
       SELECT 
         reviews.*, 
         users.name as user_name, 
-        users.tier as user_tier
+        users.tier as user_tier,
+        menu_items.name as menu_item_name,
+        menu_items.tags as menu_item_tags,
+        restaurants.name as restaurant_name
     `;
 
     if (userId) {
@@ -81,6 +84,8 @@ class Review {
     query += `
       FROM reviews 
       JOIN users ON reviews.user_id = users.id
+      JOIN menu_items ON reviews.menu_item_id = menu_items.id
+      JOIN restaurants ON menu_items.restaurant_id = restaurants.id
       WHERE reviews.id = $1
     `;
 

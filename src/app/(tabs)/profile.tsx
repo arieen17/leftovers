@@ -5,50 +5,49 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
-import { ChefHat, Star, Heart, MessageCircle, UserStar } from "lucide-react-native";
+import { Star, Heart, MessageCircle } from "lucide-react-native";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
+import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
+import FeastFinder from "../../../public/tiers/feastFinder.svg";
+import TrailblazingTaster from "../../../public/tiers/trailblazingTaster.svg";
+import HoneyConnoisseur from "../../../public/tiers/honeyConnoisseur.svg";
+import BearCritic from "../../../public/tiers/bearCritic.svg";
 import { TopBar } from "@/components/TopBar";
 import { AppText } from "@/components/AppText";
 import { useAuth } from "@/context/AuthContext";
 import { getUserReviews, type Review } from "@/services/userService";
 import { getCurrentUser } from "@/services/authService";
-import { apiRequest } from "@/services/api"; // ADD THIS
+import { apiRequest } from "@/services/api";
 
 interface UserStats {
   xp: number;
   likes_received: number;
 }
 
-import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
-import FeastFinder from "../../../public/tiers/feastFinder.svg";
-import TrailblazingTaster from "../../../public/tiers/trailblazingTaster.svg";
-import HoneyConnoisseur from "../../../public/tiers/honeyConnoisseur.svg";
-import BearCritic from "../../../public/tiers/bearCritic.svg";
-
-
 export default function ProfileScreen() {
   const [isReview, setIsReview] = useState(true);
   const [isBadge, setIsBadge] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [userReviews, setUserReviews] = useState<Review[]>([]);
-  const [userStats, setUserStats] = useState<UserStats>({ xp: 0, likes_received: 0 });
+  const [userStats, setUserStats] = useState<UserStats>({
+    xp: 0,
+    likes_received: 0,
+  });
   const [loading, setLoading] = useState(false);
-  const [rank, setRank] = useState(0);
   const [loadingStats, setLoadingStats] = useState(false);
 
   const { user, logout, isAuthenticated, login } = useAuth();
   const router = useRouter();
 
-  const labels: Record<number,string> = {
+  const labels: Record<number, string> = {
     0: "Young Grubber",
     1: "Feast Finder",
     2: "Trailblazing Taster",
     3: "Honey Connoisseur",
     4: "Supreme Bear Critic",
   };
-  
 
   // Sync user data when screen comes into focus, but only if it changed
   useFocusEffect(
@@ -95,15 +94,13 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
-  // Load reviews and stats when screen comes into focus (so it's always up-to-date)
-  // FIXED: Combined into single useFocusEffect like teammate's version
   useFocusEffect(
     useCallback(() => {
       if (isAuthenticated && user && isReview) {
         loadUserReviews();
         loadUserStats();
       }
-    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats]) // FIXED: Proper dependencies
+    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats])
   );
 
   const handleLogout = () => {
@@ -128,10 +125,33 @@ export default function ProfileScreen() {
   };
 
   const toggleFavorite = () => {
-    setRank(rank+1)
     setIsBadge(false);
     setIsFavorite(true);
     setIsReview(false);
+  };
+
+  const getRankFromXP = (xp: number): number => {
+    const level = Math.floor(xp / 1000) + 1;
+    if (level <= 2) return 0;
+    if (level <= 4) return 1;
+    if (level <= 6) return 2;
+    if (level <= 8) return 3;
+    return 4;
+  };
+
+  const getRankBadge = (rank: number) => {
+    switch (rank) {
+      case 0:
+        return <YoungGrubber width={24} height={24} />;
+      case 1:
+        return <FeastFinder width={24} height={24} />;
+      case 2:
+        return <TrailblazingTaster width={24} height={24} />;
+      case 3:
+        return <HoneyConnoisseur width={24} height={24} />;
+      default:
+        return <BearCritic width={24} height={24} />;
+    }
   };
 
   const getTimeAgo = (dateString: string) => {
@@ -212,22 +232,28 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* XP DISPLAY - NEW SECTION */}
-          <View className="bg-[#4CAF50] rounded-xl p-4 mb-4">
-            <View className="flex-row items-center mb-2">
-              <ChefHat size={20} color="#ffffff" />
-              <Text className="text-white font-bold text-md ml-2">
-                XP Progress
-              </Text>
-            </View>
+          {/* XP DISPLAY WITH RANK */}
+          <View className="bg-[#76abc7] rounded-xl p-4 mb-4">
             {loadingStats ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <>
+                <View className="flex-row items-center justify-between mb-3">
+                  <View className="flex-row items-center flex-1">
+                    <Text className="text-white font-bold text-lg">
+                      {labels[getRankFromXP(userStats.xp || 0)]}
+                    </Text>
+                  </View>
+                  <View className="ml-2">
+                    {getRankBadge(getRankFromXP(userStats.xp || 0))}
+                  </View>
+                </View>
                 <View className="h-3 bg-white/30 rounded-full overflow-hidden mb-1">
                   <View
                     className="h-full bg-white rounded-full"
-                    style={{ width: `${Math.min(100, ((userStats.xp || 0) % 1000) / 10)}%` }}
+                    style={{
+                      width: `${Math.min(100, ((userStats.xp || 0) % 1000) / 10)}%`,
+                    }}
                   />
                 </View>
                 <View className="flex-row justify-between">
@@ -235,30 +261,12 @@ export default function ProfileScreen() {
                     Level {Math.floor((userStats.xp || 0) / 1000) + 1}
                   </Text>
                   <Text className="text-white text-xs">
-                    {userStats.xp || 0} / {(Math.floor((userStats.xp || 0) / 1000) + 1) * 1000} XP
+                    {userStats.xp || 0} /{" "}
+                    {(Math.floor((userStats.xp || 0) / 1000) + 1) * 1000} XP
                   </Text>
                 </View>
               </>
             )}
-          </View>
-
-          <View className="bg-[#295298] rounded-xl p-4 mb-4">
-            <View className="flex-row items-center mb-3">
-              {rank === 0 && <YoungGrubber width={24} height={24} />}
-              {rank === 1 && <FeastFinder width={24} height={24} />}
-              {rank === 2 && <TrailblazingTaster width={24} height={24} />}
-              {rank === 3 && <HoneyConnoisseur width={24} height={24} />}
-              {rank >= 4 && <BearCritic width={24} height={24} />}
-              <Text className="text-white font-bold text-lg ml-2">
-                {labels[Math.min(rank, 4)]}
-              </Text>
-            </View>
-            <View className="h-3 bg-white/30 rounded-full overflow-hidden">
-              <View
-                className="h-full bg-white rounded-full"
-                style={{ width: userStats.xp % 100 + "%" }}
-              />
-            </View>
           </View>
 
           <View className="w-full bg-[#A1B1E4] flex-row rounded-full justify-center items-center mb-4 py-2 px-2">
@@ -387,8 +395,14 @@ export default function ProfileScreen() {
           )}
 
           {isBadge && (
-            <View className="bg-[#C2D0FF] rounded-xl p-8 items-center mb-6">  
-                {Object.entries(labels).filter(([r]) => Number(r) <= rank).map(([rank, label]) => (<Text className="mb-3" key={rank}>{label}</Text>))}
+            <View className="bg-[#C2D0FF] rounded-xl p-8 items-center mb-6">
+              {Object.entries(labels)
+                .filter(([r]) => Number(r) <= getRankFromXP(userStats.xp || 0))
+                .map(([rank, label]) => (
+                  <Text className="mb-3" key={rank}>
+                    {label}
+                  </Text>
+                ))}
             </View>
           )}
 

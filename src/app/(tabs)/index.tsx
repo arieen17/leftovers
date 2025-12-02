@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import StarIcon from "../../../public/icons/yellowStar.svg";
 import { Star } from "lucide-react-native";
 import { usePosts } from "@/context/PostsContext";
@@ -22,6 +22,7 @@ import {
   MenuItem,
 } from "@/services/restaurantService";
 import { getPopularItems } from "@/services/recommendationService";
+import { useAuth } from "@/context/AuthContext";
 
 interface PopularMenuItem {
   id: number;
@@ -40,7 +41,8 @@ interface PopularMenuItem {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { posts } = usePosts();
+  const { posts, loadUserReviews } = usePosts();
+  const { isAuthenticated, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{
     restaurants: Restaurant[];
@@ -52,6 +54,15 @@ export default function HomeScreen() {
   const [loadingPopular, setLoadingPopular] = useState(true);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  // Refresh reviews when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated && user) {
+        loadUserReviews();
+      }
+    }, [isAuthenticated, user, loadUserReviews])
+  );
 
   useEffect(() => {
     const loadPopularItems = async () => {
@@ -286,7 +297,7 @@ export default function HomeScreen() {
                         <View className="flex-row items-center gap-1">
                           {Array.from({ length: 5 }, (_, i) => {
                             const rating = Math.round(
-                              parseFloat(item.average_rating!),
+                              parseFloat(item.average_rating!)
                             );
                             const isFilled = i < rating;
                             return (

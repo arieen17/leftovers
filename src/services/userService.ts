@@ -8,6 +8,7 @@ export interface Review {
   rating: number;
   comment: string;
   photos: string[];
+  tags?: string[];
   created_at: string;
   updated_at: string;
   user_name?: string;
@@ -16,7 +17,6 @@ export interface Review {
   restaurant_name?: string;
   like_count?: number;
   comment_count?: number;
-  menu_item_tags?: string[];
 }
 
 /**

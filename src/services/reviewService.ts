@@ -8,9 +8,12 @@ export interface Review {
   rating: number;
   comment: string;
   photos: string[];
+  tags?: string[];
   created_at: string;
   user_name?: string;
   user_tier?: string;
+  menu_item_name?: string;
+  restaurant_name?: string;
   like_count?: number;
   comment_count?: number;
   user_liked?: boolean;
@@ -21,6 +24,7 @@ export interface CreateReviewData {
   rating: number;
   comment: string;
   photos?: string[];
+  tags?: string[];
 }
 
 /**

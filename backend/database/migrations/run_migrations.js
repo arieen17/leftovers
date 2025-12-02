@@ -16,6 +16,14 @@ async function run_migrations() {
     } = require("../migrations/005_create_reviews_table");
     await createReviewsTable();
 
+    // Run add user fields migration
+    const { addUserFields } = require("../migrations/006_add_user_fields");
+    await addUserFields();
+
+    // Run add review tags migration
+    const { addReviewTags } = require("../migrations/007_add_review_tags");
+    await addReviewTags();
+
     console.log("✅ All migrations completed successfully!");
     process.exit(0);
   } catch (error) {

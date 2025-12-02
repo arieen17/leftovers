@@ -3,18 +3,28 @@ const User = require("../models/User");
 
 const createReview = async (req, res) => {
   try {
-    const userId = req.body.user_id || req.user?.userId;
-    
+    // Get user_id from authenticated user (set by auth middleware)
+    const userId = req.user?.userId;
+
     if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
+      return res.status(401).json({ error: "User not authenticated" });
     }
 
-    const review = await Review.create(req.body);
-    
+    // Ensure user_id is set from authenticated user, not from request body
+    const reviewData = {
+      ...req.body,
+      user_id: userId, // Always use authenticated user's ID
+    };
+
+    const review = await Review.create(reviewData);
+
     // ADD XP for creating a review
     await User.addXP(userId, 50);
-    
-    res.status(201).json(review);
+
+    // Fetch the full review with menu item and restaurant names
+    const fullReview = await Review.findById(review.id, userId);
+
+    res.status(201).json(fullReview);
   } catch (error) {
     console.error("Review creation error:", error);
     if (error.code === "23505") {
@@ -33,7 +43,7 @@ const getMenuItemReviews = async (req, res) => {
   try {
     const reviews = await Review.findByMenuItem(req.params.menuItemId);
     res.json(reviews);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 };
@@ -42,7 +52,7 @@ const getUserReviews = async (req, res) => {
   try {
     const reviews = await Review.findByUser(req.params.userId);
     res.json(reviews);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: "Failed to fetch user reviews" });
   }
 };

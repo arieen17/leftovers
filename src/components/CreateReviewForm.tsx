@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { X, Plus } from "lucide-react-native";
-import * as Notifications from 'expo-notifications';
+import * as Notifications from "expo-notifications";
 import { AppText } from "./AppText";
 import { Dropdown } from "./Dropdown";
 import { StarRating } from "./StarRating";
@@ -29,7 +29,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export function CreateReviewForm() {
   const router = useRouter();
-  const { addPost } = usePosts();
+  const { addPost, loadUserReviews } = usePosts();
   const { isAuthenticated, user } = useAuth();
   const [restaurant, setRestaurant] = useState("");
   const [menuItem, setMenuItem] = useState("");
@@ -48,7 +48,7 @@ export function CreateReviewForm() {
     number | null
   >(null);
   const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(
-    null,
+    null
   );
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function CreateReviewForm() {
         setRestaurants([]);
         Alert.alert(
           "No Restaurants Found",
-          "The database appears to be empty. Please add restaurants to the database first.",
+          "The database appears to be empty. Please add restaurants to the database first."
         );
       } else {
         setRestaurants(data);
@@ -84,7 +84,7 @@ export function CreateReviewForm() {
         error instanceof Error ? error.message : "Network request failed";
       Alert.alert(
         "Connection Error",
-        `Unable to load restaurants.\n\nError: ${errorMessage}\n\nPlease check:\n1. Backend is running on port 5000\n2. If using Expo Go, use your computer's IP instead of localhost\n3. Both devices are on the same WiFi network`,
+        `Unable to load restaurants.\n\nError: ${errorMessage}\n\nPlease check:\n1. Backend is running on port 5000\n2. If using Expo Go, use your computer's IP instead of localhost\n3. Both devices are on the same WiFi network`
       );
     } finally {
       setLoadingRestaurants(false);
@@ -106,7 +106,7 @@ export function CreateReviewForm() {
   const handleRestaurantSelect = (restaurantName: string) => {
     setRestaurant(restaurantName);
     const selectedRestaurant = restaurants.find(
-      (r) => r.name === restaurantName,
+      (r) => r.name === restaurantName
     );
     const newRestaurantId = selectedRestaurant?.id || null;
 
@@ -121,7 +121,7 @@ export function CreateReviewForm() {
   const handleMenuItemSelect = (menuItemName: string) => {
     setMenuItem(menuItemName);
     const selectedMenuItem = menuItems.find(
-      (item) => item.name === menuItemName,
+      (item) => item.name === menuItemName
     );
     setSelectedMenuItemId(selectedMenuItem?.id || null);
   };
@@ -148,18 +148,18 @@ export function CreateReviewForm() {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Review Posted! ⭐",
-          body: `You rated "${itemName}" ${rating} star${rating !== 1 ? 's' : ''}!`,
-          data: { 
-            type: 'review_created',
+          body: `You rated "${itemName}" ${rating} star${rating !== 1 ? "s" : ""}!`,
+          data: {
+            type: "review_created",
             rating: rating,
-            itemName: itemName
+            itemName: itemName,
           },
         },
         trigger: null, // Show immediately
       });
-      console.log('✅ Review notification sent');
+      console.log("✅ Review notification sent");
     } catch (error) {
-      console.log('❌ Failed to send notification:', error);
+      console.log("❌ Failed to send notification:", error);
       // Don't show error to user - notification failure shouldn't break review posting
     }
   };
@@ -188,6 +188,7 @@ export function CreateReviewForm() {
         rating,
         comment: review,
         photos: photo ? [photo] : undefined,
+        tags: tags.length > 0 ? tags : undefined,
       });
 
       // Also add to local posts context for immediate UI update
@@ -204,6 +205,9 @@ export function CreateReviewForm() {
         likeCount: createdReview.like_count ?? 0,
         commentCount: createdReview.comment_count ?? 0,
       });
+
+      // Refresh posts from backend to ensure sync
+      await loadUserReviews();
 
       // Send notification after successful review creation
       await sendReviewNotification(menuItem, rating);
@@ -224,7 +228,7 @@ export function CreateReviewForm() {
         "Error",
         error instanceof Error
           ? error.message
-          : "Failed to create review. Please try again.",
+          : "Failed to create review. Please try again."
       );
     } finally {
       setIsSubmitting(false);
