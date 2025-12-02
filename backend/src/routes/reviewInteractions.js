@@ -2,10 +2,10 @@ const express = require("express");
 const { authenticate } = require("../middleware/auth");
 const Review = require("../models/Review");
 const ReviewComment = require("../models/ReviewComment");
-
+const User = require("../models/User");
+const pool = require("../../database/config");
 const router = express.Router();
 
-// Like a review
 // Like/Unlike a review
 router.post("/:reviewId/like", authenticate, async (req, res) => {
   try {
@@ -34,8 +34,32 @@ router.post("/:reviewId/like", authenticate, async (req, res) => {
     let result;
     if (action === "unlike") {
       result = await Review.unlikeReview(userId, reviewId);
+      
+      // Decrement likes for review author when unliking
+      const reviewResult = await pool.query(
+        `SELECT user_id FROM reviews WHERE id = $1`,
+        [reviewId]
+      );
+      
+      if (reviewResult.rows.length > 0) {
+        const reviewAuthorId = reviewResult.rows[0].user_id;
+        await User.incrementLikes(reviewAuthorId, -1); // Decrement by 1
+      }
     } else {
       result = await Review.likeReview(userId, reviewId);
+      
+      // Increment likes for review author when liking
+      if (result.user_liked) {
+        const reviewResult = await pool.query(
+          `SELECT user_id FROM reviews WHERE id = $1`,
+          [reviewId]
+        );
+        
+        if (reviewResult.rows.length > 0) {
+          const reviewAuthorId = reviewResult.rows[0].user_id;
+          await User.incrementLikes(reviewAuthorId, 1); // Increment by 1
+        }
+      }
     }
 
     console.log(`✅ User ${userId} toggled like for review ${reviewId}`);
@@ -121,8 +145,32 @@ router.post("/comments/:commentId/like", authenticate, async (req, res) => {
     let result;
     if (action === "unlike") {
       result = await ReviewComment.unlikeComment(userId, commentId);
+      
+      // Decrement likes for comment author when unliking
+      const commentResult = await pool.query(
+        `SELECT user_id FROM review_comments WHERE id = $1`,
+        [commentId]
+      );
+      
+      if (commentResult.rows.length > 0) {
+        const commentAuthorId = commentResult.rows[0].user_id;
+        await User.incrementLikes(commentAuthorId, -1); // Decrement by 1
+      }
     } else {
       result = await ReviewComment.likeComment(userId, commentId);
+      
+      // Increment likes for comment author when liking
+      if (result.user_liked) {
+        const commentResult = await pool.query(
+          `SELECT user_id FROM review_comments WHERE id = $1`,
+          [commentId]
+        );
+        
+        if (commentResult.rows.length > 0) {
+          const commentAuthorId = commentResult.rows[0].user_id;
+          await User.incrementLikes(commentAuthorId, 1); // Increment by 1
+        }
+      }
     }
 
     console.log(`✅ User ${userId} toggled like for comment ${commentId}`);
@@ -251,16 +299,12 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
     const user = userResult.rows[0];
 
     res.status(201).json({
-      success: true,
-      message: "Comment added successfully",
-      comment: {
-        ...commentData,
-        user_name: user?.name || "User",
-        user_tier: user?.tier || "Bronze",
-        like_count: 0,
-        user_liked: false,
-      },
-      comment_count: updatedReview.comment_count,
+      ...commentData,
+      user_name: user?.name || 'User',
+      user_tier: user?.tier || 'Bronze',
+      like_count: 0,
+      user_liked: false,
+      comment_count: updatedReview.comment_count
     });
   } catch (error) {
     const userId = req.user?.userId;
@@ -309,92 +353,6 @@ router.get("/:reviewId/comments", async (req, res) => {
     console.error(`❌ Fetch comments error for review ${reviewId}:`, error);
     res.status(500).json({
       error: "Failed to fetch comments",
-      details: error.message,
-      code: error.code,
-    });
-  }
-});
-
-// Like a comment
-router.post("/comments/:commentId/like", authenticate, async (req, res) => {
-  try {
-    const userId = req.user?.userId;
-    const commentId = req.params.commentId;
-
-    if (!userId) {
-      return res.status(401).json({ error: "User authentication failed" });
-    }
-
-    console.log(`🔵 User ${userId} attempting to like comment ${commentId}`);
-
-    const like = await ReviewComment.likeComment(userId, commentId);
-
-    console.log(`✅ User ${userId} successfully liked comment ${commentId}`);
-    res.json({
-      message: "Comment liked",
-      like,
-    });
-  } catch (error) {
-    const userId = req.user?.userId;
-    const commentId = req.params.commentId;
-
-    console.error(
-      `❌ Like comment error for user ${userId || "unknown"}, comment ${commentId}:`,
-      error,
-    );
-
-    // Handle specific PostgreSQL errors
-    if (error.code === "23505") {
-      // Unique violation
-      return res.status(400).json({
-        error: "Already liked this comment",
-        details: "You have already liked this comment",
-      });
-    } else if (error.code === "23503") {
-      // Foreign key violation
-      return res.status(404).json({
-        error: "Comment not found",
-        details: "The specified comment does not exist",
-      });
-    }
-
-    res.status(500).json({
-      error: "Failed to like comment",
-      details: error.message,
-      code: error.code,
-    });
-  }
-});
-
-// Unlike a comment
-router.delete("/comments/:commentId/like", authenticate, async (req, res) => {
-  try {
-    const userId = req.user?.userId;
-    const commentId = req.params.commentId;
-
-    if (!userId) {
-      return res.status(401).json({ error: "User authentication failed" });
-    }
-
-    console.log(`🔵 User ${userId} attempting to unlike comment ${commentId}`);
-
-    const unlike = await ReviewComment.unlikeComment(userId, commentId);
-
-    console.log(`✅ User ${userId} successfully unliked comment ${commentId}`);
-    res.json({
-      message: "Comment unliked",
-      unlike,
-    });
-  } catch (error) {
-    const userId = req.user?.userId;
-    const commentId = req.params.commentId;
-
-    console.error(
-      `❌ Unlike comment error for user ${userId || "unknown"}, comment ${commentId}:`,
-      error,
-    );
-    res.status(500).json({
-      error: "Failed to unlike comment",
       details: error.message,
       code: error.code,
     });

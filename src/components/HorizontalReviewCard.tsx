@@ -47,9 +47,18 @@ export function HorizontalReviewCard({ post }: HorizontalReviewCardProps) {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => deletePost(post.id),
+          onPress: async () => {
+            try {
+              await deletePost(post.id);
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                "Failed to delete review. Please try again."
+              );
+            }
+          },
         },
-      ],
+      ]
     );
   };
 

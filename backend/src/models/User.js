@@ -66,6 +66,38 @@ class User {
     const result = await pool.query(query, values);
     return result.rows[0];
   }
+  static async getUserProfile(userId) {
+    const result = await pool.query(
+      `SELECT id, email, name, tier, xp, likes_received, birthday, phone_number, address, created_at
+       FROM users WHERE id = $1`,
+      [userId]
+    );
+    return result.rows[0];
+  }
+
+  // Add XP to user
+  static async addXP(userId, xpAmount) {
+    const result = await pool.query(
+      `UPDATE users 
+       SET xp = COALESCE(xp, 0) + $1 
+       WHERE id = $2 
+       RETURNING id, xp, likes_received`,
+      [xpAmount, userId]
+    );
+    return result.rows[0];
+  }
+
+  // Increment likes received for user
+  static async incrementLikes(userId, amount = 1) {
+    const result = await pool.query(
+      `UPDATE users 
+       SET likes_received = COALESCE(likes_received, 0) + $1 
+       WHERE id = $2 
+       RETURNING id, xp, likes_received`,
+      [amount, userId]
+    );
+    return result.rows[0];
+  }
 }
 
 module.exports = User;

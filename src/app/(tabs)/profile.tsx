@@ -7,13 +7,19 @@ import {
 } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
-import { ChefHat, Star, Heart, MessageCircle } from "lucide-react-native";
+import { ChefHat, Star, Heart, MessageCircle, UserStar } from "lucide-react-native";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import { TopBar } from "@/components/TopBar";
 import { AppText } from "@/components/AppText";
 import { useAuth } from "@/context/AuthContext";
 import { getUserReviews, type Review } from "@/services/userService";
 import { getCurrentUser } from "@/services/authService";
+import { apiRequest } from "@/services/api"; // ADD THIS
+
+interface UserStats {
+  xp: number;
+  likes_received: number;
+}
 
 import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
 import FeastFinder from "../../../public/tiers/feastFinder.svg";
@@ -27,8 +33,11 @@ export default function ProfileScreen() {
   const [isBadge, setIsBadge] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>({ xp: 0, likes_received: 0 });
   const [loading, setLoading] = useState(false);
   const [rank, setRank] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(false);
+
   const { user, logout, isAuthenticated, login } = useAuth();
   const router = useRouter();
 
@@ -46,7 +55,6 @@ export default function ProfileScreen() {
     useCallback(() => {
       const currentUser = getCurrentUser();
       if (currentUser) {
-        // Only update if user data actually changed to prevent infinite loops
         if (
           !user ||
           currentUser.id !== user.id ||
@@ -56,7 +64,7 @@ export default function ProfileScreen() {
           login({ ...currentUser });
         }
       }
-    }, [login, user?.id, user?.name, user?.email]),
+    }, [login, user]) // FIXED: Removed unnecessary dependencies
   );
 
   const loadUserReviews = useCallback(async () => {
@@ -73,11 +81,30 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (isAuthenticated && user && isReview) {
-      loadUserReviews();
+  const loadUserStats = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setLoadingStats(true);
+      const stats = await apiRequest<UserStats>(`/api/users/${user.id}/stats`);
+      setUserStats(stats);
+    } catch (error) {
+      console.error("Error loading user stats:", error);
+    } finally {
+      setLoadingStats(false);
     }
-  }, [isAuthenticated, user?.id, isReview, loadUserReviews]);
+  }, [user]);
+
+  // Load reviews and stats when screen comes into focus (so it's always up-to-date)
+  // FIXED: Combined into single useFocusEffect like teammate's version
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated && user && isReview) {
+        loadUserReviews();
+        loadUserStats();
+      }
+    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats]) // FIXED: Proper dependencies
+  );
 
   const handleLogout = () => {
     logout();
@@ -118,7 +145,7 @@ export default function ProfileScreen() {
   };
 
   const reviewCount = userReviews.length;
-  const totalLikes = userReviews.length * 15;
+  const totalLikes = userStats.likes_received; // CHANGED: Use actual likes from stats
 
   if (!isAuthenticated || !user) {
     return (
@@ -154,9 +181,13 @@ export default function ProfileScreen() {
                 <Text className="text-sm text-gray-600">Reviews</Text>
               </View>
               <View className="items-center">
-                <Text className="text-2xl font-bold text-gray-900">
-                  {totalLikes}
-                </Text>
+                {loadingStats ? (
+                  <ActivityIndicator size="small" color="#011A69" />
+                ) : (
+                  <Text className="text-2xl font-bold text-gray-900">
+                    {totalLikes}
+                  </Text>
+                )}
                 <Text className="text-sm text-gray-600">Likes</Text>
               </View>
             </View>
@@ -181,6 +212,36 @@ export default function ProfileScreen() {
             </View>
           </View>
 
+          {/* XP DISPLAY - NEW SECTION */}
+          <View className="bg-[#4CAF50] rounded-xl p-4 mb-4">
+            <View className="flex-row items-center mb-2">
+              <ChefHat size={20} color="#ffffff" />
+              <Text className="text-white font-bold text-md ml-2">
+                XP Progress
+              </Text>
+            </View>
+            {loadingStats ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <>
+                <View className="h-3 bg-white/30 rounded-full overflow-hidden mb-1">
+                  <View
+                    className="h-full bg-white rounded-full"
+                    style={{ width: `${Math.min(100, ((userStats.xp || 0) % 1000) / 10)}%` }}
+                  />
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-white text-xs">
+                    Level {Math.floor((userStats.xp || 0) / 1000) + 1}
+                  </Text>
+                  <Text className="text-white text-xs">
+                    {userStats.xp || 0} / {(Math.floor((userStats.xp || 0) / 1000) + 1) * 1000} XP
+                  </Text>
+                </View>
+              </>
+            )}
+          </View>
+
           <View className="bg-[#295298] rounded-xl p-4 mb-4">
             <View className="flex-row items-center mb-3">
               {rank === 0 && <YoungGrubber width={24} height={24} />}
@@ -195,7 +256,7 @@ export default function ProfileScreen() {
             <View className="h-3 bg-white/30 rounded-full overflow-hidden">
               <View
                 className="h-full bg-white rounded-full"
-                style={{ width: user.exp % 100 + "%" }}
+                style={{ width: userStats.xp % 100 + "%" }}
               />
             </View>
           </View>
@@ -275,7 +336,7 @@ export default function ProfileScreen() {
                               }
                               strokeWidth={2}
                             />
-                          ),
+                          )
                         )}
                       </View>
                     </View>
@@ -296,7 +357,7 @@ export default function ProfileScreen() {
                             size="small"
                             className="text-gray-700 ml-1 mb-0"
                           >
-                            15
+                            {review.like_count ?? 0}
                           </AppText>
                         </View>
                         <View className="flex-row items-center">
@@ -305,7 +366,7 @@ export default function ProfileScreen() {
                             size="small"
                             className="text-gray-700 ml-1 mb-0"
                           >
-                            3
+                            {review.comment_count ?? 0}
                           </AppText>
                         </View>
                       </View>
