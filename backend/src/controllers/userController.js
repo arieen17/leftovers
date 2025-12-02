@@ -5,7 +5,6 @@ const updateUser = async (req, res) => {
     const userId = req.params.id;
     const { name, email, birthday, phone_number, address } = req.body;
 
-    // Basic validation
     if (!name || !email) {
       return res.status(400).json({ error: "Name and email are required" });
     }

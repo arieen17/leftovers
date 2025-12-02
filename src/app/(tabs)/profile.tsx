@@ -40,7 +40,7 @@ export default function ProfileScreen() {
           login({ ...currentUser });
         }
       }
-    }, [login, user?.id, user?.name, user?.email]),
+    }, [login, user])
   );
 
   const loadUserReviews = useCallback(async () => {
@@ -57,11 +57,21 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
+  // Load reviews when screen comes into focus (so it's always up-to-date)
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated && user && isReview) {
+        loadUserReviews();
+      }
+    }, [isAuthenticated, user, isReview, loadUserReviews])
+  );
+
+  // Also load on initial mount
   useEffect(() => {
     if (isAuthenticated && user && isReview) {
       loadUserReviews();
     }
-  }, [isAuthenticated, user?.id, isReview, loadUserReviews]);
+  }, [isAuthenticated, user, isReview, loadUserReviews]);
 
   const handleLogout = () => {
     logout();
@@ -254,7 +264,7 @@ export default function ProfileScreen() {
                               }
                               strokeWidth={2}
                             />
-                          ),
+                          )
                         )}
                       </View>
                     </View>
@@ -275,7 +285,7 @@ export default function ProfileScreen() {
                             size="small"
                             className="text-gray-700 ml-1 mb-0"
                           >
-                            15
+                            {review.like_count ?? 0}
                           </AppText>
                         </View>
                         <View className="flex-row items-center">
@@ -284,7 +294,7 @@ export default function ProfileScreen() {
                             size="small"
                             className="text-gray-700 ml-1 mb-0"
                           >
-                            3
+                            {review.comment_count ?? 0}
                           </AppText>
                         </View>
                       </View>

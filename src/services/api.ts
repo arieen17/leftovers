@@ -23,17 +23,20 @@ export const API_CONFIG = {
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
   try {
+    // Merge headers properly - ensure Authorization header is preserved
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
     const response = await fetch(url, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -43,7 +46,7 @@ export async function apiRequest<T>(
       throw new Error(
         errorData.error ||
           errorData.message ||
-          `HTTP error! status: ${response.status}`,
+          `HTTP error! status: ${response.status}`
       );
     }
 

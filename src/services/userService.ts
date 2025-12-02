@@ -14,6 +14,9 @@ export interface Review {
   user_tier?: string;
   menu_item_name?: string;
   restaurant_name?: string;
+  like_count?: number;
+  comment_count?: number;
+  menu_item_tags?: string[];
 }
 
 /**

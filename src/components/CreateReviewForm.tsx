@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { X, Plus } from "lucide-react-native";
+import * as Notifications from 'expo-notifications';
 import { AppText } from "./AppText";
 import { Dropdown } from "./Dropdown";
 import { StarRating } from "./StarRating";
@@ -141,6 +142,28 @@ export function CreateReviewForm() {
     handleAddTag();
   };
 
+  // Notification function for successful review posting
+  const sendReviewNotification = async (itemName: string, rating: number) => {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Review Posted! ⭐",
+          body: `You rated "${itemName}" ${rating} star${rating !== 1 ? 's' : ''}!`,
+          data: { 
+            type: 'review_created',
+            rating: rating,
+            itemName: itemName
+          },
+        },
+        trigger: null, // Show immediately
+      });
+      console.log('✅ Review notification sent');
+    } catch (error) {
+      console.log('❌ Failed to send notification:', error);
+      // Don't show error to user - notification failure shouldn't break review posting
+    }
+  };
+
   const handlePost = async () => {
     if (!restaurant || !menuItem || rating === 0 || !review.trim()) {
       Alert.alert("Please fill in all fields before posting");
@@ -181,6 +204,9 @@ export function CreateReviewForm() {
         likeCount: createdReview.like_count ?? 0,
         commentCount: createdReview.comment_count ?? 0,
       });
+
+      // Send notification after successful review creation
+      await sendReviewNotification(menuItem, rating);
 
       setRestaurant("");
       setMenuItem("");
