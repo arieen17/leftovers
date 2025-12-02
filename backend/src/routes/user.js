@@ -4,7 +4,6 @@ const { updateUser, getUserStats } = require("../controllers/userController");
 
 const router = express.Router();
 
-// Test route
 router.get("/test", (req, res) => {
   res.json({ message: "User routes are working!" });
 });

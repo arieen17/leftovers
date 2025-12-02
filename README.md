@@ -2,7 +2,7 @@
 
 CS180 - Leftovers
 
-# Expo starter
+## Expo starter
 
 A plain project with the usual suspects set up:
 
@@ -11,18 +11,54 @@ A plain project with the usual suspects set up:
 - ESLint & Prettier
 - TypeScript
 
-# To packages to install
+## To packages to install
 
 - `npm i`
 - `npm install react-native-maps`
+- `npm install expo-notifications`
+- `npm install expo-image-picker`
+- `npm install expo-location`
 
-# To Use
+## To Use
 
 - Download the Expo Go App
 - Run `npm run start`
 - Scan the QR code to see on mobile
+- Or can use web application version of app (some design may differ due to different platform)
 
-## AWS Configuration
+# Testing Setup with Jest
+
+## Installation Commands
+
+Inside your project root directory:
+
+```bash
+npm install --save-dev jest jest-expo @testing-library/react-native @testing-library/jest-native @types/jest react-test-renderer
+```
+
+### Run FrontEnd Tests:
+
+```bash
+npm test src/components/__tests__/components.test.tsx
+```
+
+### Run Backend Tests (cd into leftovers/backend):
+
+```bash
+npm test
+```
+
+### Run Tests w/ Coverage:
+
+```bash
+npm run test:coverage
+```
+
+## Additional Resources
+
+- [Jest Documentation](https://jestjs.io/docs/getting-started)
+- [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)
+- [Expo Testing Guide](https://docs.expo.dev/guides/testing-with-jest/)
 
 ### Database Connection
 
