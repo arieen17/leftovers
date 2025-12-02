@@ -2,7 +2,7 @@ const express = require("express");
 const { authenticate } = require("../middleware/auth");
 const Review = require("../models/Review");
 const ReviewComment = require("../models/ReviewComment");
-
+const pool = require("../../database/config");
 const router = express.Router();
 
 // Like a review
@@ -251,17 +251,14 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
     const user = userResult.rows[0];
 
     res.status(201).json({
-      success: true,
-      message: "Comment added successfully",
-      comment: {
-        ...commentData,
-        user_name: user?.name || "User",
-        user_tier: user?.tier || "Bronze",
-        like_count: 0,
-        user_liked: false,
-      },
-      comment_count: updatedReview.comment_count,
-    });
+  // Remove the "comment" wrapper
+  ...commentData,
+  user_name: user?.name || 'User',
+  user_tier: user?.tier || 'Bronze',
+  like_count: 0,
+  user_liked: false,
+  comment_count: updatedReview.comment_count
+});
   } catch (error) {
     const userId = req.user?.userId;
     const reviewId = req.params.reviewId;
