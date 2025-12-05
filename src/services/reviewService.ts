@@ -23,7 +23,6 @@ export interface CreateReviewData {
   rating: number;
   comment: string;
   photos?: string[];
-  // REMOVED: tags?: string[];
 }
 
 /**
@@ -40,12 +39,6 @@ export async function createReview(
       );
     }
 
-    console.log(
-      "🔵 Creating review with token:",
-      token ? `${token.substring(0, 20)}...` : "NO TOKEN"
-    );
-
-    // Remove tags from the data sent to backend since reviews table doesn't have tags column
     const { photos, ...rest } = reviewData;
     const payload = {
       ...rest,
@@ -56,11 +49,11 @@ export async function createReview(
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     });
 
-    console.log("✅ Review created successfully:", review);
     return review;
   } catch (error) {
     console.error("❌ Error creating review:", error);
@@ -74,35 +67,67 @@ export async function createReview(
 /**
  * Get a single review by ID
  */
-export async function getReviewById(reviewId: number): Promise<Review> {
+export async function getReviewById(reviewId: number): Promise<Review | null> {
   try {
     const token = getAuthToken();
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // **FIXED: Always include token if available**
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    const url = `/api/reviews/${reviewId}`;
-    console.log(`🔵 Fetching review from: ${url}`);
-    const review = await apiRequest<Review>(url, {
+    
+    const review = await apiRequest<Review>(`/api/reviews/${reviewId}`, {
+      method: 'GET',
       headers,
     });
-    console.log(`✅ Successfully fetched review:`, review);
+    
     return review;
   } catch (error) {
     console.error("❌ Error fetching review:", error);
-    throw error;
+    
+    // Check if it's a 404 error (review not found)
+    if (error instanceof Error && error.message.includes("404")) {
+      console.log(`Review ${reviewId} not found`);
+      return null;
+    }
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes("401")) {
+      console.log("Authentication failed for review fetch");
+      // **FIXED: Don't retry without token - return null or re-throw**
+      return null;
+    }
+    
+    return null;
   }
 }
 
 /**
- * Get reviews for a menu item
+ * Get reviews for a menu item - **FIXED: Include auth token**
  */
 export async function getMenuItemReviews(
   menuItemId: number
 ): Promise<Review[]> {
   try {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // **FIXED: Include token for authenticated user data**
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
     const reviews = await apiRequest<Review[]>(
-      `/api/reviews/menu-item/${menuItemId}`
+      `/api/reviews/menu-item/${menuItemId}`,
+      {
+        method: 'GET',
+        headers,
+      }
     );
     return reviews;
   } catch (error) {
@@ -125,6 +150,7 @@ export async function deleteReview(reviewId: number): Promise<void> {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
   } catch (error) {
