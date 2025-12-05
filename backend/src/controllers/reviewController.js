@@ -41,9 +41,10 @@ const createReview = async (req, res) => {
 
 const getMenuItemReviews = async (req, res) => {
   try {
-    const reviews = await Review.findByMenuItem(req.params.menuItemId);
+    const userId = req.user?.userId; // Get user ID from JWT
+    const reviews = await Review.findByMenuItem(req.params.menuItemId, userId);
     res.json(reviews);
-  } catch (_error) {
+  } catch (error) {
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 };

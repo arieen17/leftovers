@@ -136,9 +136,23 @@ export default function DiscoverScreen() {
   const loadReviewsForItem = async (menuItemId: number) => {
     try {
       setLoadingReviews((prev) => ({ ...prev, [menuItemId]: true }));
+      
+      const token = getAuthToken();
+      if (!token) {
+        console.error("No auth token available");
+        setReviews((prev) => ({ ...prev, [menuItemId]: [] }));
+        return;
+      }
+      
       const response = await apiRequest<Review[]>(
         `/api/reviews/menu-item/${menuItemId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
+      
       setReviews((prev) => ({ ...prev, [menuItemId]: response }));
     } catch (error) {
       console.error("Error loading reviews:", error);
@@ -150,9 +164,21 @@ export default function DiscoverScreen() {
   const loadCommentsForReview = async (reviewId: number) => {
     try {
       setLoadingComments((prev) => ({ ...prev, [reviewId]: true }));
+      
+      const token = getAuthToken();
+      const config: any = {};
+      
+      if (token) {
+        config.headers = {
+          Authorization: `Bearer ${token}`
+        };
+      }
+      
       const response = await apiRequest<Comment[]>(
         `/api/reviews/${reviewId}/comments`,
+        config
       );
+      
       setComments((prev) => ({ ...prev, [reviewId]: response }));
     } catch (error) {
       console.error("Error loading comments:", error);

@@ -112,6 +112,14 @@ export default function ProfileScreen() {
 
     try {
       setLoading(true);
+      
+      const token = getAuthToken();
+      if (!token) {
+        console.error("No auth token available");
+        setUserReviews([]);
+        return;
+      }
+      
       const reviews = await getUserReviews(user.id);
       setUserReviews(reviews);
     } catch (error) {
@@ -157,9 +165,21 @@ export default function ProfileScreen() {
   const loadCommentsForReview = async (reviewId: number) => {
     try {
       setLoadingComments((prev) => ({ ...prev, [reviewId]: true }));
+      
+      const token = getAuthToken();
+      const config: any = {};
+      
+      if (token) {
+        config.headers = {
+          Authorization: `Bearer ${token}`
+        };
+      }
+      
       const response = await apiRequest<Comment[]>(
         `/api/reviews/${reviewId}/comments`,
+        config
       );
+      
       setComments((prev) => ({ ...prev, [reviewId]: response }));
     } catch (error) {
       console.error("Error loading comments:", error);

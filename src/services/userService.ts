@@ -17,6 +17,7 @@ export interface Review {
   restaurant_name?: string;
   like_count?: number;
   comment_count?: number;
+  user_liked?: boolean; // Make sure this is included!
 }
 
 /**
@@ -25,9 +26,13 @@ export interface Review {
 export async function getUserReviews(userId: number): Promise<Review[]> {
   try {
     const token = getAuthToken();
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+    
     const reviews = await apiRequest<Review[]>(`/api/reviews/user/${userId}`, {
       headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
+        Authorization: `Bearer ${token}`,
       },
     });
     return reviews;
