@@ -4,10 +4,19 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
-import { ChefHat, Star, Heart, MessageCircle } from "lucide-react-native";
+import {
+  ChefHat,
+  Star,
+  Heart,
+  MessageCircle,
+  Send,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react-native";
 import ProfilePic from "../../../public/icons/basicProfile.svg";
 import YoungGrubber from "../../../public/tiers/youngGrubber.svg";
 import FeastFinder from "../../../public/tiers/feastFinder.svg";
@@ -18,12 +27,24 @@ import { TopBar } from "@/components/TopBar";
 import { AppText } from "@/components/AppText";
 import { useAuth } from "@/context/AuthContext";
 import { getUserReviews, type Review } from "@/services/userService";
-import { getCurrentUser } from "@/services/authService";
+import { getCurrentUser, getAuthToken } from "@/services/authService";
 import { apiRequest } from "@/services/api";
 
 interface UserStats {
   xp: number;
   likes_received: number;
+}
+
+interface Comment {
+  id: number;
+  user_id: number;
+  review_id: number;
+  comment: string;
+  created_at: string;
+  user_name?: string;
+  user_tier?: string;
+  like_count?: number;
+  user_liked?: boolean;
 }
 
 export default function ProfileScreen() {
@@ -37,6 +58,16 @@ export default function ProfileScreen() {
   });
   const [loading, setLoading] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
+  
+  // Like/Comment state
+  const [expandedReview, setExpandedReview] = useState<number | null>(null);
+  const [comments, setComments] = useState<{ [key: number]: Comment[] }>({});
+  const [newComments, setNewComments] = useState<{ [key: number]: string }>({});
+  const [loadingComments, setLoadingComments] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [likingReview, setLikingReview] = useState<number | null>(null);
+  const [likingComment, setLikingComment] = useState<number | null>(null);
 
   const { user, logout, isAuthenticated, login } = useAuth();
   const router = useRouter();
@@ -59,7 +90,7 @@ export default function ProfileScreen() {
     return 4; // Supreme Bear Critic
   };
 
-  // Sync user data when screen comes into focus, but only if it changed
+  // Sync user data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       const currentUser = getCurrentUser();
@@ -73,7 +104,7 @@ export default function ProfileScreen() {
           login({ ...currentUser });
         }
       }
-    }, [login, user]) // FIXED: Removed unnecessary dependencies
+    }, [login, user])
   );
 
   const loadUserReviews = useCallback(async () => {
@@ -104,16 +135,166 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
-  // Load reviews and stats when screen comes into focus (so it's always up-to-date)
-  // FIXED: Combined into single useFocusEffect like teammate's version
+  // Load reviews and stats when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (isAuthenticated && user && isReview) {
         loadUserReviews();
         loadUserStats();
       }
-    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats]) // FIXED: Proper dependencies
+    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats])
   );
+
+  const toggleReviewExpansion = async (reviewId: number) => {
+    if (expandedReview === reviewId) {
+      setExpandedReview(null);
+    } else {
+      setExpandedReview(reviewId);
+      await loadCommentsForReview(reviewId);
+    }
+  };
+
+  const loadCommentsForReview = async (reviewId: number) => {
+    try {
+      setLoadingComments((prev) => ({ ...prev, [reviewId]: true }));
+      const response = await apiRequest<Comment[]>(
+        `/api/reviews/${reviewId}/comments`,
+      );
+      setComments((prev) => ({ ...prev, [reviewId]: response }));
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    } finally {
+      setLoadingComments((prev) => ({ ...prev, [reviewId]: false }));
+    }
+  };
+
+  const handleLikeReview = async (reviewId: number) => {
+    if (!isAuthenticated || likingReview === reviewId) return;
+
+    try {
+      setLikingReview(reviewId);
+      const token = getAuthToken();
+      if (!token) return;
+
+      // Get current state
+      const currentReview = userReviews.find(r => r.id === reviewId);
+      const isCurrentlyLiked = currentReview?.user_liked || false;
+      
+      // Always use POST with action parameter
+      const action = isCurrentlyLiked ? 'unlike' : 'like';
+      
+      const response = await apiRequest<any>(
+        `/api/reviews/${reviewId}/like?action=${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      // Update the specific review in state directly
+      setUserReviews((prev) =>
+        prev.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                like_count: response.like_count || 0,
+                user_liked: response.user_liked || false,
+              }
+            : review,
+        )
+      );
+
+    } catch (error) {
+      console.error("Error liking/unliking review:", error);
+    } finally {
+      setLikingReview(null);
+    }
+  };
+
+  const handleLikeComment = async (commentId: number, reviewId: number) => {
+    if (!isAuthenticated || likingComment === commentId) return;
+
+    try {
+      setLikingComment(commentId);
+      const token = getAuthToken();
+      if (!token) return;
+
+      // Get current state
+      const currentComment = comments[reviewId]?.find(c => c.id === commentId);
+      const isCurrentlyLiked = currentComment?.user_liked || false;
+      
+      // Always use POST with action parameter
+      const action = isCurrentlyLiked ? 'unlike' : 'like';
+      
+      const response = await apiRequest<any>(
+        `/api/reviews/comments/${commentId}/like?action=${action}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      // Update the specific comment in state directly
+      setComments((prev) => ({
+        ...prev,
+        [reviewId]:
+          prev[reviewId]?.map((comment) =>
+            comment.id === commentId
+              ? {
+                  ...comment,
+                  like_count: response.like_count || 0,
+                  user_liked: response.user_liked || false,
+                }
+              : comment,
+          ) || [],
+      }));
+
+    } catch (error) {
+      console.error("Error liking/unliking comment:", error);
+    } finally {
+      setLikingComment(null);
+    }
+  };
+
+  const handleAddComment = async (reviewId: number) => {
+    if (!isAuthenticated || !newComments[reviewId]?.trim()) return;
+
+    try {
+      const token = getAuthToken();
+      if (!token) return;
+
+      const response = await apiRequest<any>(
+        `/api/reviews/${reviewId}/comments`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ comment: newComments[reviewId] }),
+        },
+      );
+
+      setNewComments((prev) => ({ ...prev, [reviewId]: "" }));
+
+      // Add the new comment to state
+      setComments((prev) => ({
+        ...prev,
+        [reviewId]: [...(prev[reviewId] || []), response],
+      }));
+
+      // Update review comment count
+      setUserReviews((prev) =>
+        prev.map((review) =>
+          review.id === reviewId
+            ? { 
+                ...review, 
+                comment_count: response.comment_count || (review.comment_count || 0) + 1 
+              }
+            : review,
+        )
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -230,7 +411,7 @@ export default function ProfileScreen() {
                   {loadingStats ? "Loading..." : labels[currentRank]}
                 </Text>
               </View>
-              <View className="absolute right-4 top-4">
+              <View>
                 {currentRank === 0 && <YoungGrubber width={32} height={32} />}
                 {currentRank === 1 && <FeastFinder width={32} height={32} />}
                 {currentRank === 2 && (
@@ -311,82 +492,179 @@ export default function ProfileScreen() {
                 userReviews.map((review) => (
                   <View
                     key={review.id}
-                    className="bg-[#C2D0FF] rounded-xl p-5 mb-3"
+                    className="bg-[#C2D0FF] rounded-xl p-5 mb-3 border border-gray-200"
                   >
-                    <View className="flex-row justify-between items-start mb-3">
-                      <View className="flex-1 mr-2">
-                        <AppText
-                          size="large"
-                          bold
-                          className="text-gray-900 mb-1"
-                        >
-                          {review.menu_item_name || "Menu Item"}
-                        </AppText>
-                        <AppText size="medium" className="text-gray-600">
-                          {review.restaurant_name || "Restaurant"}
-                        </AppText>
+                    {/* Review Header */}
+                    <TouchableOpacity
+                      onPress={() => toggleReviewExpansion(review.id)}
+                    >
+                      <View className="flex-row justify-between items-start mb-3">
+                        <View className="flex-1 mr-2">
+                          <Text className="text-lg font-bold text-gray-900 mb-1">
+                            {review.menu_item_name || "Menu Item"}
+                          </Text>
+                          <Text className="text-base text-gray-600">
+                            {review.restaurant_name || "Restaurant"}
+                          </Text>
+                        </View>
+                        <View className="flex-row items-center gap-1">
+                          {Array.from({ length: 5 }, (_, i) => i + 1).map(
+                            (star) => (
+                              <Star
+                                key={star}
+                                size={16}
+                                fill={
+                                  star <= review.rating
+                                    ? "#FFD700"
+                                    : "transparent"
+                                }
+                                color={
+                                  star <= review.rating ? "#FFD700" : "#D1D5DB"
+                                }
+                                strokeWidth={2}
+                              />
+                            )
+                          )}
+                        </View>
                       </View>
-                      <View className="flex-row items-center gap-1">
-                        {Array.from({ length: 5 }, (_, i) => i + 1).map(
-                          (star) => (
-                            <Star
-                              key={star}
-                              size={16}
-                              fill={
-                                star <= review.rating
-                                  ? "#FFD700"
-                                  : "transparent"
-                              }
-                              color={
-                                star <= review.rating ? "#FFD700" : "#D1D5DB"
-                              }
-                              strokeWidth={2}
-                            />
-                          )
+
+                      {review.comment && (
+                        <Text className="text-base text-gray-700 mb-3">
+                          {review.comment}
+                        </Text>
+                      )}
+
+                      {/* Like/Comment/Time Row */}
+                      <View className="flex-row justify-between items-center mt-2">
+                        <View className="flex-row items-center space-x-3">
+                          <TouchableOpacity
+                            className="flex-row items-center"
+                            onPress={() => handleLikeReview(review.id)}
+                            disabled={likingReview === review.id}
+                          >
+                            {likingReview === review.id ? (
+                              <ActivityIndicator size={14} color="#EF4444" />
+                            ) : (
+                              <Heart
+                                size={16}
+                                fill={review.user_liked ? "#EF4444" : "transparent"}
+                                color={review.user_liked ? "#EF4444" : "#6B7280"}
+                              />
+                            )}
+                            <Text className="text-sm text-gray-600 ml-1">
+                              {review.like_count || 0}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            className="flex-row items-center"
+                            onPress={() => toggleReviewExpansion(review.id)}
+                          >
+                            <MessageCircle size={16} color="#6B7280" />
+                            <Text className="text-sm text-gray-600 ml-1">
+                              {review.comment_count || 0}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View className="flex-row items-center">
+                          <Text className="text-sm text-gray-500 mr-1">
+                            {getTimeAgo(review.created_at)}
+                          </Text>
+                          {expandedReview === review.id ? (
+                            <ChevronUp size={16} color="#6B7280" />
+                          ) : (
+                            <ChevronDown size={16} color="#6B7280" />
+                          )}
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Expanded Comments Section */}
+                    {expandedReview === review.id && (
+                      <View className="mt-4 border-t border-gray-300 pt-3">
+                        {loadingComments[review.id] ? (
+                          <ActivityIndicator size="small" color="#295298" />
+                        ) : (
+                          <>
+                            {/* Comments List */}
+                            {comments[review.id]?.map((comment) => (
+                              <View
+                                key={comment.id}
+                                className="mb-3 pb-2 border-b border-gray-200"
+                              >
+                                <Text className="text-sm font-bold text-gray-900">
+                                  {comment.user_name || "User"}
+                                </Text>
+                                <Text className="text-sm text-gray-700 mt-1">
+                                  {comment.comment}
+                                </Text>
+                                <View className="flex-row justify-between items-center mt-1">
+                                  <TouchableOpacity
+                                    className="flex-row items-center"
+                                    onPress={() => handleLikeComment(comment.id, review.id)}
+                                    disabled={likingComment === comment.id}
+                                  >
+                                    {likingComment === comment.id ? (
+                                      <ActivityIndicator size={12} color="#EF4444" />
+                                    ) : (
+                                      <Heart
+                                        size={14}
+                                        fill={
+                                          comment.user_liked
+                                            ? "#EF4444"
+                                            : "transparent"
+                                        }
+                                        color={
+                                          comment.user_liked ? "#EF4444" : "#6B7280"
+                                        }
+                                      />
+                                    )}
+                                    <Text className="text-xs text-gray-500 ml-1">
+                                      {comment.like_count || 0}
+                                    </Text>
+                                  </TouchableOpacity>
+                                  <Text className="text-xs text-gray-500">
+                                    {new Date(comment.created_at).toLocaleDateString()}
+                                  </Text>
+                                </View>
+                              </View>
+                            ))}
+
+                            {/* Add Comment Input */}
+                            {isAuthenticated && (
+                              <View className="flex-row items-center mt-2">
+                                <TextInput
+                                  className="flex-1 border border-gray-400 rounded-full px-4 py-2 text-sm"
+                                  placeholder="Add a comment..."
+                                  value={newComments[review.id] || ""}
+                                  onChangeText={(text) =>
+                                    setNewComments((prev) => ({
+                                      ...prev,
+                                      [reviewId]: text,
+                                    }))
+                                  }
+                                  onSubmitEditing={() =>
+                                    handleAddComment(review.id)
+                                  }
+                                />
+                                <TouchableOpacity
+                                  className="ml-2 bg-[#295298] rounded-full p-2"
+                                  onPress={() => handleAddComment(review.id)}
+                                >
+                                  <Send size={16} color="#FFFFFF" />
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                          </>
                         )}
                       </View>
-                    </View>
-
-                    {review.comment && (
-                      <AppText size="medium" className="text-gray-700 mb-3">
-                        {review.comment}
-                      </AppText>
                     )}
-
-                    <View className="h-px bg-gray-300 my-3" />
-
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-row items-center gap-3">
-                        <View className="flex-row items-center">
-                          <Heart size={16} fill="#EF4444" color="#EF4444" />
-                          <AppText
-                            size="small"
-                            className="text-gray-700 ml-1 mb-0"
-                          >
-                            {review.like_count ?? 0}
-                          </AppText>
-                        </View>
-                        <View className="flex-row items-center">
-                          <MessageCircle size={16} color="#6B7280" />
-                          <AppText
-                            size="small"
-                            className="text-gray-700 ml-1 mb-0"
-                          >
-                            {review.comment_count ?? 0}
-                          </AppText>
-                        </View>
-                      </View>
-                      <AppText size="small" className="text-gray-500 mb-0">
-                        {getTimeAgo(review.created_at)}
-                      </AppText>
-                    </View>
                   </View>
                 ))
               ) : (
                 <View className="bg-[#C2D0FF] rounded-xl p-8 items-center">
-                  <AppText size="medium" className="text-gray-600 mb-0">
+                  <Text className="text-base text-gray-600 mb-0">
                     No reviews yet
-                  </AppText>
+                  </Text>
                 </View>
               )}
             </View>
@@ -407,9 +685,9 @@ export default function ProfileScreen() {
           {isFavorite && (
             <View className="pb-6">
               <View className="bg-[#C2D0FF] rounded-xl p-8 items-center mb-3">
-                <AppText size="medium" className="text-gray-600 mb-0">
+                <Text className="text-base text-gray-600 mb-0">
                   No favorites yet
-                </AppText>
+                </Text>
               </View>
             </View>
           )}
