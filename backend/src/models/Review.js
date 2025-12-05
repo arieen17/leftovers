@@ -2,27 +2,28 @@ const pool = require("../../database/config");
 
 class Review {
   static async create(reviewData) {
-  const result = await pool.query(
-    `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos, like_count, comment_count)
-     VALUES ($1, $2, $3, $4, $5, 0, 0)
-     RETURNING *`,
-    [
-      reviewData.user_id,
-      reviewData.menu_item_id,
-      reviewData.rating,
-      reviewData.comment,
-      reviewData.photos,
-    ],
-  );
-  return result.rows[0];
-}
+    const result = await pool.query(
+      `INSERT INTO reviews (user_id, menu_item_id, rating, comment, photos, like_count, comment_count)
+       VALUES ($1, $2, $3, $4, $5, 0, 0)
+       RETURNING *`,
+      [
+        reviewData.user_id,
+        reviewData.menu_item_id,
+        reviewData.rating,
+        reviewData.comment,
+        reviewData.photos,
+      ]
+    );
+    return result.rows[0];
+  }
 
   static async findByMenuItem(menuItemId, userId = null) {
     let query = `
     SELECT 
       reviews.*, 
       users.name as user_name, 
-      users.tier as user_tier
+      users.tier as user_tier,
+      (SELECT COUNT(*) FROM review_likes WHERE review_id = reviews.id) as like_count
   `;
 
     if (userId) {
@@ -50,7 +51,9 @@ class Review {
       `SELECT 
         reviews.*, 
         menu_items.name as menu_item_name, 
-        restaurants.name as restaurant_name
+        restaurants.name as restaurant_name,
+        (SELECT COUNT(*) FROM review_likes WHERE review_id = reviews.id) as like_count,
+        EXISTS(SELECT 1 FROM review_likes WHERE review_id = reviews.id AND user_id = $1) as user_liked
        FROM reviews 
        JOIN menu_items ON reviews.menu_item_id = menu_items.id
        JOIN restaurants ON menu_items.restaurant_id = restaurants.id
@@ -69,7 +72,8 @@ class Review {
         users.tier as user_tier,
         menu_items.name as menu_item_name,
         menu_items.tags as menu_item_tags,
-        restaurants.name as restaurant_name
+        restaurants.name as restaurant_name,
+        (SELECT COUNT(*) FROM review_likes WHERE review_id = reviews.id) as like_count
     `;
 
     if (userId) {
