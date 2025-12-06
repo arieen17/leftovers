@@ -34,27 +34,27 @@ router.post("/:reviewId/like", authenticate, async (req, res) => {
     let result;
     if (action === "unlike") {
       result = await Review.unlikeReview(userId, reviewId);
-      
+
       // Decrement likes for review author when unliking
       const reviewResult = await pool.query(
         `SELECT user_id FROM reviews WHERE id = $1`,
-        [reviewId]
+        [reviewId],
       );
-      
+
       if (reviewResult.rows.length > 0) {
         const reviewAuthorId = reviewResult.rows[0].user_id;
         await User.incrementLikes(reviewAuthorId, -1); // Decrement by 1
       }
     } else {
       result = await Review.likeReview(userId, reviewId);
-      
+
       // Increment likes for review author when liking
       if (result.user_liked) {
         const reviewResult = await pool.query(
           `SELECT user_id FROM reviews WHERE id = $1`,
-          [reviewId]
+          [reviewId],
         );
-        
+
         if (reviewResult.rows.length > 0) {
           const reviewAuthorId = reviewResult.rows[0].user_id;
           await User.incrementLikes(reviewAuthorId, 1); // Increment by 1
@@ -145,27 +145,27 @@ router.post("/comments/:commentId/like", authenticate, async (req, res) => {
     let result;
     if (action === "unlike") {
       result = await ReviewComment.unlikeComment(userId, commentId);
-      
+
       // Decrement likes for comment author when unliking
       const commentResult = await pool.query(
         `SELECT user_id FROM review_comments WHERE id = $1`,
-        [commentId]
+        [commentId],
       );
-      
+
       if (commentResult.rows.length > 0) {
         const commentAuthorId = commentResult.rows[0].user_id;
         await User.incrementLikes(commentAuthorId, -1); // Decrement by 1
       }
     } else {
       result = await ReviewComment.likeComment(userId, commentId);
-      
+
       // Increment likes for comment author when liking
       if (result.user_liked) {
         const commentResult = await pool.query(
           `SELECT user_id FROM review_comments WHERE id = $1`,
-          [commentId]
+          [commentId],
         );
-        
+
         if (commentResult.rows.length > 0) {
           const commentAuthorId = commentResult.rows[0].user_id;
           await User.incrementLikes(commentAuthorId, 1); // Increment by 1
@@ -300,11 +300,11 @@ router.post("/:reviewId/comments", authenticate, async (req, res) => {
 
     res.status(201).json({
       ...commentData,
-      user_name: user?.name || 'User',
-      user_tier: user?.tier || 'Bronze',
+      user_name: user?.name || "User",
+      user_tier: user?.tier || "Bronze",
       like_count: 0,
       user_liked: false,
-      comment_count: updatedReview.comment_count
+      comment_count: updatedReview.comment_count,
     });
   } catch (error) {
     const userId = req.user?.userId;

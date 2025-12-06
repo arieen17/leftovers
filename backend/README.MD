@@ -7,10 +7,12 @@ Setup Instructions:
 
 2. Environment Setup
    Create .env file in backend directory with:
-   JWT_SECRET=your-super-secret-jwt-key-here
-   JWT_EXPIRES_IN=7d
+   JWT_SECRET=CO2+izJbGawwzWR9ojx6Xwujrgx4bFMO1vZLPek+ZYgOHKZun2OPxcQBCwQj9U0Qd4WL0aFMQVhEI+T8u5T0vw==
    NODE_ENV=development
-   EXPO_PUBLIC_API_URL= "add ur IP Address"
+   JWT_EXPIRES_IN=7d
+
+   Create .env file in root directory:
+   EXPO_PUBLIC_API_URL=http://YOUR_IP_ADDRESS:5000/
 
 3. Database Connection
    Database is hosted on AWS RDS
@@ -23,8 +25,12 @@ Setup Instructions:
    Create Python virtual environment:
    python3 -m venv venv
 
+   If windows: py -3 -m venv venv
+
    Activate virtual environment:
    source venv/bin/activate
+
+   If windows: venv\Scripts\activate.bat
 
    Install Python dependencies:
    pip install -r requirements.txt

@@ -61,7 +61,7 @@ export default function HomeScreen() {
       if (isAuthenticated && user) {
         loadUserReviews();
       }
-    }, [isAuthenticated, user, loadUserReviews])
+    }, [isAuthenticated, user, loadUserReviews]),
   );
 
   useEffect(() => {
@@ -297,7 +297,7 @@ export default function HomeScreen() {
                         <View className="flex-row items-center gap-1">
                           {Array.from({ length: 5 }, (_, i) => {
                             const rating = Math.round(
-                              parseFloat(item.average_rating!)
+                              parseFloat(item.average_rating!),
                             );
                             const isFilled = i < rating;
                             return (

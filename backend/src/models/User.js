@@ -70,7 +70,7 @@ class User {
     const result = await pool.query(
       `SELECT id, email, name, tier, xp, likes_received, birthday, phone_number, address, created_at
        FROM users WHERE id = $1`,
-      [userId]
+      [userId],
     );
     return result.rows[0];
   }
@@ -82,7 +82,7 @@ class User {
        SET xp = COALESCE(xp, 0) + $1 
        WHERE id = $2 
        RETURNING id, xp, likes_received`,
-      [xpAmount, userId]
+      [xpAmount, userId],
     );
     return result.rows[0];
   }
@@ -94,7 +94,7 @@ class User {
        SET likes_received = COALESCE(likes_received, 0) + $1 
        WHERE id = $2 
        RETURNING id, xp, likes_received`,
-      [amount, userId]
+      [amount, userId],
     );
     return result.rows[0];
   }

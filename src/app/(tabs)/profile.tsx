@@ -58,7 +58,7 @@ export default function ProfileScreen() {
   });
   const [loading, setLoading] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
-  
+
   // Like/Comment state
   const [expandedReview, setExpandedReview] = useState<number | null>(null);
   const [comments, setComments] = useState<{ [key: number]: Comment[] }>({});
@@ -104,7 +104,7 @@ export default function ProfileScreen() {
           login({ ...currentUser });
         }
       }
-    }, [login, user])
+    }, [login, user]),
   );
 
   const loadUserReviews = useCallback(async () => {
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
         loadUserReviews();
         loadUserStats();
       }
-    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats])
+    }, [isAuthenticated, user, isReview, loadUserReviews, loadUserStats]),
   );
 
   const toggleReviewExpansion = async (reviewId: number) => {
@@ -159,19 +159,19 @@ export default function ProfileScreen() {
       setLoadingComments((prev) => ({ ...prev, [reviewId]: true }));
       const token = getAuthToken();
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
-      
+
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
-      
+
       const response = await apiRequest<Comment[]>(
         `/api/reviews/${reviewId}/comments`,
         {
-          method: 'GET',
+          method: "GET",
           headers,
-        }
+        },
       );
       setComments((prev) => ({ ...prev, [reviewId]: response || [] }));
     } catch (error) {
@@ -191,16 +191,16 @@ export default function ProfileScreen() {
       if (!token) return;
 
       // Get current state
-      const currentReview = userReviews.find(r => r.id === reviewId);
+      const currentReview = userReviews.find((r) => r.id === reviewId);
       const isCurrentlyLiked = currentReview?.user_liked || false;
-      
+
       // Always use POST with action parameter
-      const action = isCurrentlyLiked ? 'unlike' : 'like';
-      
+      const action = isCurrentlyLiked ? "unlike" : "like";
+
       const response = await apiRequest<any>(
         `/api/reviews/${reviewId}/like?action=${action}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -215,9 +215,8 @@ export default function ProfileScreen() {
                 user_liked: response.user_liked || false,
               }
             : review,
-        )
+        ),
       );
-
     } catch (error) {
       console.error("Error liking/unliking review:", error);
     } finally {
@@ -234,16 +233,18 @@ export default function ProfileScreen() {
       if (!token) return;
 
       // Get current state
-      const currentComment = comments[reviewId]?.find(c => c.id === commentId);
+      const currentComment = comments[reviewId]?.find(
+        (c) => c.id === commentId,
+      );
       const isCurrentlyLiked = currentComment?.user_liked || false;
-      
+
       // Always use POST with action parameter
-      const action = isCurrentlyLiked ? 'unlike' : 'like';
-      
+      const action = isCurrentlyLiked ? "unlike" : "like";
+
       const response = await apiRequest<any>(
         `/api/reviews/comments/${commentId}/like?action=${action}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -262,7 +263,6 @@ export default function ProfileScreen() {
               : comment,
           ) || [],
       }));
-
     } catch (error) {
       console.error("Error liking/unliking comment:", error);
     } finally {
@@ -281,9 +281,9 @@ export default function ProfileScreen() {
         `/api/reviews/${reviewId}/comments`,
         {
           method: "POST",
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ comment: newComments[reviewId].trim() }),
         },
@@ -301,12 +301,13 @@ export default function ProfileScreen() {
       setUserReviews((prev) =>
         prev.map((review) =>
           review.id === reviewId
-            ? { 
-                ...review, 
-                comment_count: response.comment_count || (review.comment_count || 0) + 1 
+            ? {
+                ...review,
+                comment_count:
+                  response.comment_count || (review.comment_count || 0) + 1,
               }
             : review,
-        )
+        ),
       );
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -518,7 +519,8 @@ export default function ProfileScreen() {
                 userReviews.map((review) => {
                   const isExpanded = expandedReview === review.id;
                   const reviewComments = comments[review.id] || [];
-                  const commentCount = review.comment_count || reviewComments.length || 0;
+                  const commentCount =
+                    review.comment_count || reviewComments.length || 0;
 
                   return (
                     <View
@@ -550,11 +552,13 @@ export default function ProfileScreen() {
                                       : "transparent"
                                   }
                                   color={
-                                    star <= review.rating ? "#FFD700" : "#D1D5DB"
+                                    star <= review.rating
+                                      ? "#FFD700"
+                                      : "#D1D5DB"
                                   }
                                   strokeWidth={2}
                                 />
-                              )
+                              ),
                             )}
                           </View>
                         </View>
@@ -571,15 +575,23 @@ export default function ProfileScreen() {
                             <TouchableOpacity
                               className="flex-row items-center"
                               onPress={() => handleLikeReview(review.id)}
-                              disabled={!isAuthenticated || likingReview === review.id}
+                              disabled={
+                                !isAuthenticated || likingReview === review.id
+                              }
                             >
                               {likingReview === review.id ? (
                                 <ActivityIndicator size={14} color="#EF4444" />
                               ) : (
                                 <Heart
                                   size={16}
-                                  fill={review.user_liked ? "#EF4444" : "transparent"}
-                                  color={review.user_liked ? "#EF4444" : "#6B7280"}
+                                  fill={
+                                    review.user_liked
+                                      ? "#EF4444"
+                                      : "transparent"
+                                  }
+                                  color={
+                                    review.user_liked ? "#EF4444" : "#6B7280"
+                                  }
                                 />
                               )}
                               <Text className="text-sm text-gray-600 ml-1">
@@ -648,11 +660,22 @@ export default function ProfileScreen() {
                                           <View className="flex-row items-center">
                                             <TouchableOpacity
                                               className="flex-row items-center"
-                                              onPress={() => handleLikeComment(comment.id, review.id)}
-                                              disabled={!isAuthenticated || likingComment === comment.id}
+                                              onPress={() =>
+                                                handleLikeComment(
+                                                  comment.id,
+                                                  review.id,
+                                                )
+                                              }
+                                              disabled={
+                                                !isAuthenticated ||
+                                                likingComment === comment.id
+                                              }
                                             >
                                               {likingComment === comment.id ? (
-                                                <ActivityIndicator size={12} color="#EF4444" />
+                                                <ActivityIndicator
+                                                  size={12}
+                                                  color="#EF4444"
+                                                />
                                               ) : (
                                                 <Heart
                                                   size={14}
@@ -662,7 +685,9 @@ export default function ProfileScreen() {
                                                       : "transparent"
                                                   }
                                                   color={
-                                                    comment.user_liked ? "#EF4444" : "#6B7280"
+                                                    comment.user_liked
+                                                      ? "#EF4444"
+                                                      : "#6B7280"
                                                   }
                                                 />
                                               )}
@@ -678,8 +703,12 @@ export default function ProfileScreen() {
                                 </View>
                               ) : (
                                 <View className="py-3 items-center">
-                                  <Text className="text-gray-500 text-sm">No comments yet</Text>
-                                  <Text className="text-gray-400 text-xs mt-1">Be the first to comment!</Text>
+                                  <Text className="text-gray-500 text-sm">
+                                    No comments yet
+                                  </Text>
+                                  <Text className="text-gray-400 text-xs mt-1">
+                                    Be the first to comment!
+                                  </Text>
                                 </View>
                               )}
 
@@ -711,7 +740,9 @@ export default function ProfileScreen() {
                                     />
                                     <TouchableOpacity
                                       className={`ml-2 rounded-full p-2 ${newComments[review.id]?.trim() ? "bg-[#295298]" : "bg-gray-300"}`}
-                                      onPress={() => handleAddComment(review.id)}
+                                      onPress={() =>
+                                        handleAddComment(review.id)
+                                      }
                                       disabled={!newComments[review.id]?.trim()}
                                     >
                                       <Send size={14} color="#FFFFFF" />
@@ -728,7 +759,11 @@ export default function ProfileScreen() {
                                 <Text className="text-sm text-[#295298] font-medium">
                                   Hide comments
                                 </Text>
-                                <ChevronUp size={12} color="#295298" className="ml-1" />
+                                <ChevronUp
+                                  size={12}
+                                  color="#295298"
+                                  className="ml-1"
+                                />
                               </TouchableOpacity>
                             </>
                           )}
@@ -742,9 +777,14 @@ export default function ProfileScreen() {
                           className="flex-row items-center justify-center py-2 mt-2"
                         >
                           <Text className="text-sm text-[#295298] font-medium">
-                            View {commentCount} comment{commentCount !== 1 ? 's' : ''}
+                            View {commentCount} comment
+                            {commentCount !== 1 ? "s" : ""}
                           </Text>
-                          <ChevronDown size={12} color="#295298" className="ml-1" />
+                          <ChevronDown
+                            size={12}
+                            color="#295298"
+                            className="ml-1"
+                          />
                         </TouchableOpacity>
                       )}
                     </View>
