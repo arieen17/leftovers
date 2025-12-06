@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "concurrently \"node start-recommendation-service.js\" \"nodemon src/server.js\"",
     "start": "node start-recommendation-service.js & node src/server.js",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "aws-sdk": "^2.0.0",

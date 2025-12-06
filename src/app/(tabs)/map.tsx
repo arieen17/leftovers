@@ -59,7 +59,7 @@ export default function MapScreen() {
   });
 
   const cuisineTypes = Array.from(
-    new Set(restaurants.map((r) => r.cuisine_type).filter(Boolean))
+    new Set(restaurants.map((r) => r.cuisine_type).filter(Boolean)),
   ).sort();
 
   const defaultCenter = { latitude: 33.9745, longitude: -117.3281 };
@@ -135,7 +135,7 @@ export default function MapScreen() {
             distanceText,
             average_rating: restaurant.average_rating ?? null,
           };
-        }
+        },
       );
 
       setRestaurants(restaurantsWithDistance);
@@ -156,7 +156,7 @@ export default function MapScreen() {
 
     if (filters.maxDistance !== null && userLocation) {
       filtered = filtered.filter(
-        (r) => r.distance !== undefined && r.distance <= filters.maxDistance!
+        (r) => r.distance !== undefined && r.distance <= filters.maxDistance!,
       );
     }
 
@@ -591,7 +591,7 @@ export default function MapScreen() {
                           <Star size={20} color="#f59e0b" fill="#f59e0b" />
                           <Text className="text-lg font-bold text-gray-900 ml-2">
                             {parseFloat(
-                              restaurantDetails.average_rating
+                              restaurantDetails.average_rating,
                             ).toFixed(1)}
                           </Text>
                         </View>
@@ -647,7 +647,7 @@ export default function MapScreen() {
                               {hours}
                             </Text>
                           </View>
-                        )
+                        ),
                       )}
                     </View>
                   )}

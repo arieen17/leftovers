@@ -136,23 +136,23 @@ export default function DiscoverScreen() {
   const loadReviewsForItem = async (menuItemId: number) => {
     try {
       setLoadingReviews((prev) => ({ ...prev, [menuItemId]: true }));
-      
+
       const token = getAuthToken();
       if (!token) {
         console.error("No auth token available");
         setReviews((prev) => ({ ...prev, [menuItemId]: [] }));
         return;
       }
-      
+
       const response = await apiRequest<Review[]>(
         `/api/reviews/menu-item/${menuItemId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
-      
+
       setReviews((prev) => ({ ...prev, [menuItemId]: response }));
     } catch (error) {
       console.error("Error loading reviews:", error);
@@ -164,21 +164,21 @@ export default function DiscoverScreen() {
   const loadCommentsForReview = async (reviewId: number) => {
     try {
       setLoadingComments((prev) => ({ ...prev, [reviewId]: true }));
-      
+
       const token = getAuthToken();
       const config: any = {};
-      
+
       if (token) {
         config.headers = {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         };
       }
-      
+
       const response = await apiRequest<Comment[]>(
         `/api/reviews/${reviewId}/comments`,
-        config
+        config,
       );
-      
+
       setComments((prev) => ({ ...prev, [reviewId]: response }));
     } catch (error) {
       console.error("Error loading comments:", error);
@@ -196,16 +196,16 @@ export default function DiscoverScreen() {
       if (!token) return;
 
       // Get current state
-      const currentReview = reviews[menuItemId]?.find(r => r.id === reviewId);
+      const currentReview = reviews[menuItemId]?.find((r) => r.id === reviewId);
       const isCurrentlyLiked = currentReview?.user_liked || false;
-      
+
       // Always use POST with action parameter
-      const action = isCurrentlyLiked ? 'unlike' : 'like';
-      
+      const action = isCurrentlyLiked ? "unlike" : "like";
+
       const response = await apiRequest<any>(
         `/api/reviews/${reviewId}/like?action=${action}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -224,7 +224,6 @@ export default function DiscoverScreen() {
               : review,
           ) || [],
       }));
-
     } catch (error) {
       console.error("Error liking/unliking review:", error);
     } finally {
@@ -241,16 +240,18 @@ export default function DiscoverScreen() {
       if (!token) return;
 
       // Get current state
-      const currentComment = comments[reviewId]?.find(c => c.id === commentId);
+      const currentComment = comments[reviewId]?.find(
+        (c) => c.id === commentId,
+      );
       const isCurrentlyLiked = currentComment?.user_liked || false;
-      
+
       // Always use POST with action parameter
-      const action = isCurrentlyLiked ? 'unlike' : 'like';
-      
+      const action = isCurrentlyLiked ? "unlike" : "like";
+
       const response = await apiRequest<any>(
         `/api/reviews/comments/${commentId}/like?action=${action}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -269,7 +270,6 @@ export default function DiscoverScreen() {
               : comment,
           ) || [],
       }));
-
     } catch (error) {
       console.error("Error liking/unliking comment:", error);
     } finally {
@@ -307,7 +307,11 @@ export default function DiscoverScreen() {
         [menuItemId]:
           prev[menuItemId]?.map((review) =>
             review.id === reviewId
-              ? { ...review, comment_count: response.comment_count || (review.comment_count || 0) + 1 }
+              ? {
+                  ...review,
+                  comment_count:
+                    response.comment_count || (review.comment_count || 0) + 1,
+                }
               : review,
           ) || [],
       }));
@@ -449,7 +453,9 @@ export default function DiscoverScreen() {
                           ) : (
                             <Heart
                               size={16}
-                              fill={review.user_liked ? "#EF4444" : "transparent"}
+                              fill={
+                                review.user_liked ? "#EF4444" : "transparent"
+                              }
                               color={review.user_liked ? "#EF4444" : "#6B7280"}
                             />
                           )}
@@ -502,11 +508,16 @@ export default function DiscoverScreen() {
                               <View className="flex-row justify-between items-center mt-1">
                                 <TouchableOpacity
                                   className="flex-row items-center"
-                                  onPress={() => handleLikeComment(comment.id, review.id)}
+                                  onPress={() =>
+                                    handleLikeComment(comment.id, review.id)
+                                  }
                                   disabled={likingComment === comment.id}
                                 >
                                   {likingComment === comment.id ? (
-                                    <ActivityIndicator size={12} color="#EF4444" />
+                                    <ActivityIndicator
+                                      size={12}
+                                      color="#EF4444"
+                                    />
                                   ) : (
                                     <Heart
                                       size={14}
@@ -516,7 +527,9 @@ export default function DiscoverScreen() {
                                           : "transparent"
                                       }
                                       color={
-                                        comment.user_liked ? "#EF4444" : "#6B7280"
+                                        comment.user_liked
+                                          ? "#EF4444"
+                                          : "#6B7280"
                                       }
                                     />
                                   )}
@@ -555,7 +568,9 @@ export default function DiscoverScreen() {
                               />
                               <TouchableOpacity
                                 className="ml-2 bg-[#295298] rounded-full p-2"
-                                onPress={() => handleAddComment(review.id, item.id)}
+                                onPress={() =>
+                                  handleAddComment(review.id, item.id)
+                                }
                               >
                                 <Send size={16} color="#FFFFFF" />
                               </TouchableOpacity>

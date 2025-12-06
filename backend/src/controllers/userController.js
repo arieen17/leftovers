@@ -32,16 +32,16 @@ const updateUser = async (req, res) => {
 const getUserStats = async (req, res) => {
   try {
     const userId = req.params.id;
-    
+
     const user = await User.getUserProfile(userId);
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     res.json({
       xp: user.xp || 0,
-      likes_received: user.likes_received || 0
+      likes_received: user.likes_received || 0,
     });
   } catch (error) {
     console.error("Error fetching user stats:", error);

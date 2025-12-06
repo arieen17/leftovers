@@ -54,12 +54,6 @@ npm test
 npm run test:coverage
 ```
 
-## Additional Resources
-
-- [Jest Documentation](https://jestjs.io/docs/getting-started)
-- [React Native Testing Library](https://callstack.github.io/react-native-testing-library/)
-- [Expo Testing Guide](https://docs.expo.dev/guides/testing-with-jest/)
-
 ### Database Connection
 
 - **Host**: `rateapp.c98oqscikd1q.us-east-2.rds.amazonaws.com`
